@@ -17,6 +17,7 @@
             <ComboBoxItem Content="1" Name="b"/>
         </ComboBox>
         <Button x:Name="Start" Content="Сортировать" HorizontalAlignment="Left" Margin="676,70,0,0" VerticalAlignment="Top" Height="26" Width="84" Click="BtStartClick"/>
+        <TextBox x:Name="tbOut" HorizontalAlignment="Left" Height="244" Margin="97,154,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="663"/>
 
     </Grid>
 </Window>

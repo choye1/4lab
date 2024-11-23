@@ -79,6 +79,7 @@ namespace Part3
         {
             List<string> inputData = new List<string>();
             List<string> result = new List<string>();
+            Dictionary<string, int> wordsAndCount = new Dictionary<string, int>();
 
             try
             {
@@ -96,6 +97,28 @@ namespace Part3
             {
                 throw new Exception("Ошибка при сортировке");
             }
+            try
+            {
+                WordCounter<string> wordCounter = new WordCounter<string>(result);
+                wordsAndCount = wordCounter.Main();
+            }
+            catch 
+            {
+                throw new Exception("Ошибка подсчёта слов");
+            }
+
+            try
+            {
+                WriteList(result);
+                WriteLine("");
+                WriteLine("");
+                WriteDictionary(wordsAndCount);
+
+            }
+            catch
+            { 
+                throw new Exception("Ошибка вывода");
+            }
         }
 
         private List<string> StartSort(List<string> inputData,string typeSort)
@@ -103,10 +126,8 @@ namespace Part3
             BubbleSort bs = new BubbleSort();
             var result = bs.Sort(inputData);
 
-            return null;
+            return result;
         }
-
-
 
         private List<string> ParseFile(string path)
         {
@@ -138,5 +159,49 @@ namespace Part3
             // Используем регулярное выражение для удаления всех символов, кроме букв и пробелов
             return Regex.Replace(input, @"[^a-zA-Zа-яА-Я\s]", "");
         }
+    
+        private void WriteList<T>(List<T> data)
+        {
+            foreach (T item in data)
+            {
+                Write(item + " ");
+            }
+
+            WriteLine();
+        }
+
+        private void WriteDictionary<T1,T2>(Dictionary<T1,T2> data)
+        {
+            foreach(T1 item in data.Keys)
+            {
+                WriteLine(item + " = " +data[item]);
+            }
+        }
+
+
+        private void WriteLine<T>(T message)
+        {
+            tbOut.Text += message + "\n";
+        }
+        private void WriteLine()
+        {
+            tbOut.Text +=  "\n";
+        }
+
+        private void Write<T>(T message)
+        {
+            tbOut.Text += message;
+        }
+
+        private void ClearOut()
+        {
+            tbOut.Text = "";
+        }
+    
+    
+    
+    
+    
+    
     }
 }
