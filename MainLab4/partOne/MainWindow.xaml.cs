@@ -19,9 +19,11 @@ namespace partOne
         private int delay;
         private Rectangle[] rectangles;
 
-        private SolidColorBrush defaultColor = Brushes.LightBlue;
-        private SolidColorBrush compareColor = Brushes.Yellow;
-        private SolidColorBrush swapColor = Brushes.Red;
+        private SolidColorBrush defaultColor = (SolidColorBrush) new BrushConverter().ConvertFromString("#B2F2BB"); // SoftMintGreen
+        private SolidColorBrush compareColor = (SolidColorBrush)new BrushConverter().ConvertFromString("#74C0FC"); // SkyBlue
+        private SolidColorBrush swapColor = new SolidColorBrush(Color.FromRgb(220, 20, 60)); // Crimson (насыщенный красный)
+        private double rectHeight;
+
 
         private static List<int> list = new List<int>();
         private static string filePath = "log.txt";
@@ -35,14 +37,23 @@ namespace partOne
 
         private async void StartSorting_Click(object sender, RoutedEventArgs e)
         {
-            list.Clear();
             LogTextBox.Clear();
             delay = int.Parse(Delay.Text) * 1000;
 
-            for (int i = 0; i < AddList.Text.Length; i++)
+            string input = AddList.Text; // Получаем текст из TextBox
+            list.Clear(); // Очищаем список перед добавлением новых значений
+
+            try
             {
-                list.Add(int.Parse(AddList.Text[i].ToString()));
+                // Разделяем строку по запятой и пробелам, преобразуем в числа
+                list.AddRange(input.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                                   .Select(int.Parse));
             }
+            catch (FormatException)
+            {
+                MessageBox.Show("Пожалуйста, введите только числа, разделённые запятыми.");
+            }
+
             File.WriteAllText(filePath, string.Empty);
             CreateRectangles(list);
 
@@ -71,14 +82,33 @@ namespace partOne
 
             double canvasWidth = SortCanvas.ActualWidth;
             double rectWidth = canvasWidth / arr.Count;
-
+            if (arr.Max() < 10)
+            {
+                rectHeight = 20;
+            }
+            else if (arr.Max() < 20)
+            {
+                rectHeight = 10;
+            }
+            else if (arr.Max() < 40)
+            {
+                rectHeight = 5;
+            }
+            else if (arr.Max() < 80)
+            {
+                rectHeight = 2.5;
+            }
+            else
+            {
+                rectHeight = 1.25;
+            }
             for (int i = 0; i < arr.Count; i++)
             {
                 rectangles[i] = new Rectangle
                 {
                     Width = rectWidth,
-                    Height = arr[i] * 20, // Масштабируем высоту (можно настроить)
-                    Fill = Brushes.LightBlue,
+                    Height = arr[i] * rectHeight, // Масштабируем высоту (можно настроить)
+                    Fill = defaultColor,
                     Stroke = Brushes.Black,
                     StrokeThickness = 1
                 };
@@ -501,7 +531,7 @@ namespace partOne
         {
             for (int i = 0; i < arr.Count; i++)
             {
-                rectangles[i].Height = arr[i] * 20; // Обновляем высоту
+                rectangles[i].Height = arr[i] * rectHeight; // Обновляем высоту
                 // Обновляем позицию текста
                 TextBlock textBlock = (TextBlock)SortCanvas.Children[i * 2 + 1]; // Находим TextBlock (нечетные индексы)
                 textBlock.Text = arr[i].ToString();
