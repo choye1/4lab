@@ -101,7 +101,7 @@ namespace Part3
         private List<string> StartSort(List<string> inputData,string typeSort)
         {
             BubbleSort bs = new BubbleSort();
-            bs.Sort(inputData);
+            var result = bs.Sort(inputData);
 
             return null;
         }
@@ -110,17 +110,27 @@ namespace Part3
 
         private List<string> ParseFile(string path)
         {
-            string[] a = { "abc ", "xsaf", "asdfqegf \n", "qweq\r\n" };//File.ReadAllLines(path); //
+            string[] a = File.ReadAllLines(path); //{ "abc ", "xsaf", "asdfqegf \n", "qweq\r\n" };//
             StringBuilder sb = new StringBuilder();
-            foreach (string line in a)
+
+            foreach (string s in a)
             {
-                sb.Append(line.Replace("\n", " ").Replace("\r", " ").Replace(" ", "") + " ");
+                string[] line = s.Split(" ");
+                foreach(string words in line)
+                {
+                    string word = RemoveNonLettersAndSpaces(words);
+                    sb.Append(word + " ");
+                }
             }
 
-            string input = RemoveNonLettersAndSpaces(sb.ToString());
-            List<string> inp = input.Split(" ").ToList();
-            inp.RemoveAt(inp.Count - 1);
-            return inp;
+            List<string> result = new List<string>();
+            foreach (string s in sb.ToString().Split(" "))
+            {
+                if (s != "") result.Add(s);
+
+            }
+
+            return result;
         }
 
         static string RemoveNonLettersAndSpaces(string input)
