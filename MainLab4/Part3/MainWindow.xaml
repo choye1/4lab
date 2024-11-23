@@ -1,0 +1,22 @@
+﻿<Window x:Class="Part3.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Part3"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Label Content="Файл с текстом для сортировки (path):" HorizontalAlignment="Left" Margin="66,30,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="Review" Content="Обзор.." HorizontalAlignment="Left" Margin="676,30,0,0" VerticalAlignment="Top" Height="26" Width="84" Click="BtReviewClick" />
+        <TextBox x:Name="tbSelectedFile" HorizontalAlignment="Left" Height="26" Margin="306,30,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="365"/>
+        <Label Content="Алгоритм для сортировки :" HorizontalAlignment="Left" Margin="97,69,0,0" VerticalAlignment="Top"/>
+
+        <ComboBox x:Name="CbSortAlg" HorizontalAlignment="Left" Height="26" Margin="306,69,0,0" VerticalAlignment="Top" Width="365">
+            <ComboBoxItem Content="2" Name="a"/>
+            <ComboBoxItem Content="1" Name="b"/>
+        </ComboBox>
+        <Button x:Name="Start" Content="Сортировать" HorizontalAlignment="Left" Margin="676,70,0,0" VerticalAlignment="Top" Height="26" Width="84" Click="BtStartClick"/>
+
+    </Grid>
+</Window>

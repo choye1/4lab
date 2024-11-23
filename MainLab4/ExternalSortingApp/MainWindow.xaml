@@ -1,0 +1,26 @@
+﻿<Window x:Class="ExternalSortingApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="External Sorting App" Height="450" Width="800">
+    <Grid>
+        <StackPanel>
+            <Button Content="Select File" Click="SelectFile_Click" Margin="10"/>
+            <TextBlock x:Name="FileLabel" Text="No file selected" Margin="10"/>
+
+            <StackPanel x:Name="SortMethodPanel" Margin="10">
+                <RadioButton Content="Direct Method" GroupName="SortMethod" IsChecked="True"/>
+                <RadioButton Content="Natural Method" GroupName="SortMethod"/>
+                <RadioButton Content="Multi-way Merge" GroupName="SortMethod"/>
+            </StackPanel>
+
+            <ComboBox x:Name="KeyAttributeComboBox" Margin="10"/>
+
+            <TextBox x:Name="DelayTextBox" Text="Delay (ms)" GotFocus="DelayTextBox_GotFocus" Margin="10"/>
+
+            <Button Content="Start Sorting" Click="StartSorting_Click" Margin="10"/>
+
+            <TextBlock x:Name="SortingStepsTextBlock" Text="Sorting Steps:" Margin="10"/>
+            <TextBlock x:Name="LogTextBlock" Text="Log:" Margin="10"/>
+        </StackPanel>
+    </Grid>
+</Window>

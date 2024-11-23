@@ -1,0 +1,32 @@
+﻿<Window x:Class="Part2.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Сортировка таблицы" Height="900" Width="800">
+    <Grid Margin="0,0,0,0">
+        <Label Content="Выберите файл:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0"/>
+        <Button Content="Обзор..." HorizontalAlignment="Left" VerticalAlignment="Top" Margin="200,10,0,0" Width="80" Click="BrowseFile_Click"/>
+        <TextBox Name="FilePathBox" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="297,10,0,0" Width="360" IsReadOnly="True"/>
+
+        <Label Content="Метод сортировки:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,50,0,0"/>
+        <ComboBox Name="SortMethodComboBox" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="130,50,0,0" Width="150">
+            <ComboBoxItem Content="Прямое слияние"/>
+            <ComboBoxItem Content="Естественное слияние"/>
+            <ComboBoxItem Content="Многопутевое слияние"/>
+        </ComboBox>
+
+        <Label Content="Ключ сортировки:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,90,0,0"/>
+        <ComboBox Name="KeyAttributeComboBox" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="130,90,0,0" Width="150"/>
+
+        <Label Content="Задержка (мс):" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,130,0,0"/>
+        <TextBox Name="DelayBox" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="130,130,0,0" Width="80" Text="500"/>
+
+        <Button Content="Начать сортировку" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,170,0,0" Width="150" Click="StartSort_Click"/>
+        <ListBox Name="LogBox" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,210,0,0" Width="767" Height="140"/>
+
+        <DataGrid x:Name="dataGrid" AutoGenerateColumns="True" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,360,0,0" Width="767" Height="500"/>
+        <Button Content="Назад" HorizontalAlignment="Left" Margin="200,170,0,0" VerticalAlignment="Top" Width="65" Click="GoBack_Click"/>
+        <Button Content="Вперед" HorizontalAlignment="Left" Margin="297,170,0,0" VerticalAlignment="Top" Width="65" Click="GoForward_Click"/>
+        <Button Content="Автопроигрывание" HorizontalAlignment="Left" Margin="394,170,0,0" VerticalAlignment="Top" Width="100" Click="StartAutoPlay_Click"/>
+        <Button Content="Остановка" HorizontalAlignment="Left" Margin="504,170,0,0" VerticalAlignment="Top" Width="100" Click="StopAutoPlay_Click"/>
+    </Grid>
+</Window>
