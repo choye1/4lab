@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using Part2.Sorts;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -99,7 +100,8 @@ namespace Part3
 
         private List<string> StartSort(List<string> inputData,string typeSort)
         {
-
+            BubbleSort bs = new BubbleSort();
+            bs.Sort(inputData);
 
             return null;
         }
@@ -108,7 +110,7 @@ namespace Part3
 
         private List<string> ParseFile(string path)
         {
-            string[] a = File.ReadAllLines(path); //{ "abc ", "xsaf", "asdfqegf \n", "qweq\r\n" };//
+            string[] a = { "abc ", "xsaf", "asdfqegf \n", "qweq\r\n" };//File.ReadAllLines(path); //
             StringBuilder sb = new StringBuilder();
             foreach (string line in a)
             {

@@ -10,25 +10,41 @@ namespace Part2.Sorts
     {
         public List<string> Sort(List<string> inputData)
         {
+            string[] inputdata = inputData.ToArray();
 
-            byte[] Gbytes = File.ReadAllBytes(".\file.txt");
-            for (int i = 0; i < Gbytes.Length; i++)
+            for(int i = 0;i < inputdata.Length; i++)
             {
-                bool swapped = false; // <-- добавлено
-                for (int j = 0; j < Gbytes.Length - i - 1; j++)
+                bool swapped = false;
+                for (int j = 0; j < inputdata.Length - i - 1; j++)
                 {
-                    if (Gbytes[j] > Gbytes[j + 1])
+                    if (inputdata[j] != inputdata[j+1] &&  CompareWords(inputdata[j],inputdata[j+1]))
                     {
-                        swapped = true; // <-- добавлено
-                        byte t = Gbytes[j + 1];
-                        Gbytes[j + 1] = Gbytes[j];
-                        Gbytes[j] = t;
+                        swapped = true;
+                        string t = inputdata[j+1];
+                        inputdata[j+1] = inputdata[j];
+                        inputdata[j] = t;
+                        //меняем местами
                     }
                 }
-                if (!swapped) break; // <-- добавлено
+                if (!swapped) { break; }
+
             }
-            throw new Exception("Не реализованно.");
-            
+
+            return inputdata.ToList();
+        }
+
+        private bool CompareWords(string first, string second) //0 - word1 > word2, 1 - word2 > word1 
+        {
+
+            if (first.ToArray()[0] == second.ToArray()[0])
+            {
+                return CompareWords(first.Substring(1,first.Length-1), second.Substring(1, second.Length - 1));
+            }
+            else
+            {
+                return ((byte)first[0]) > ((byte)second[0]);
+            }
+
         }
     }
 }
