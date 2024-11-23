@@ -54,7 +54,7 @@ namespace Part3
             try
             {
                 path = tbSelectedFile.Text;
-                typeSort = CbSortAlg.SelectedItem.ToString();
+                typeSort = ((ComboBoxItem)CbSortAlg.SelectedItem).Content.ToString();
             }
             catch (Exception ex)
             {
@@ -108,7 +108,7 @@ namespace Part3
 
         private List<string> ParseFile(string path)
         {
-            string[] a = { "abc ", "xsaf", "asdfqegf \n", "qweq\r\n" };//File.ReadAllLines(path);
+            string[] a = File.ReadAllLines(path); //{ "abc ", "xsaf", "asdfqegf \n", "qweq\r\n" };//
             StringBuilder sb = new StringBuilder();
             foreach (string line in a)
             {
