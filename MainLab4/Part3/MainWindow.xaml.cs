@@ -91,18 +91,18 @@ namespace Part3
             }
             try
             {
-                result = StartSort(inputData,typeSort);
+                result = StartSort(inputData, typeSort);
             }
-            catch
+            catch(Exception ex)
             {
-                throw new Exception("Ошибка при сортировке");
+                throw new Exception(ex.Message);
             }
             try
             {
                 WordCounter<string> wordCounter = new WordCounter<string>(result);
                 wordsAndCount = wordCounter.Main();
             }
-            catch 
+            catch
             {
                 throw new Exception("Ошибка подсчёта слов");
             }
@@ -116,18 +116,44 @@ namespace Part3
 
             }
             catch
-            { 
+            {
                 throw new Exception("Ошибка вывода");
             }
         }
 
-        private List<string> StartSort(List<string> inputData,string typeSort)
+        private List<string> StartSort(List<string> inputData, string typeSort)
         {
-            BubbleSort bs = new BubbleSort();
-            var result = bs.Sort(inputData);
+            List<string> result = new List<string>();
+            switch (typeSort)
+            {
+                case "Modificated Bubble Sort":
+                    result = StartBubbleSort(inputData);
+                    break;
+                case "ABC-Sort":
+                    throw new Exception("Ветка в разработке");
+                    break;
+                default: throw new Exception("Такой сортировки пока нет");
+
+            }
 
             return result;
         }
+
+        private List<string> StartBubbleSort(List<string> inputData)
+        {
+            try
+            {
+                BubbleSort bs = new BubbleSort();
+                return bs.Sort(inputData);
+            }
+            catch
+            {
+                throw new Exception("Ошибка при сортировке");
+            }
+
+        }
+
+
 
         private List<string> ParseFile(string path)
         {
@@ -137,7 +163,7 @@ namespace Part3
             foreach (string s in a)
             {
                 string[] line = s.Split(" ");
-                foreach(string words in line)
+                foreach (string words in line)
                 {
                     string word = RemoveNonLettersAndSpaces(words);
                     sb.Append(word + " ");
@@ -159,7 +185,7 @@ namespace Part3
             // Используем регулярное выражение для удаления всех символов, кроме букв и пробелов
             return Regex.Replace(input, @"[^a-zA-Zа-яА-Я\s]", "");
         }
-    
+
         private void WriteList<T>(List<T> data)
         {
             foreach (T item in data)
@@ -170,11 +196,11 @@ namespace Part3
             WriteLine();
         }
 
-        private void WriteDictionary<T1,T2>(Dictionary<T1,T2> data)
+        private void WriteDictionary<T1, T2>(Dictionary<T1, T2> data)
         {
-            foreach(T1 item in data.Keys)
+            foreach (T1 item in data.Keys)
             {
-                WriteLine(item + " = " +data[item]);
+                WriteLine(item + " = " + data[item]);
             }
         }
 
@@ -185,7 +211,7 @@ namespace Part3
         }
         private void WriteLine()
         {
-            tbOut.Text +=  "\n";
+            tbOut.Text += "\n";
         }
 
         private void Write<T>(T message)
@@ -197,11 +223,11 @@ namespace Part3
         {
             tbOut.Text = "";
         }
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     }
 }
