@@ -5,6 +5,22 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
@@ -24,6 +40,8 @@ namespace Part2
         public MainWindow()
         {
             InitializeComponent();
+            // Установка лицензии для EPPlus
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         }
 
         private void BrowseFile_Click(object sender, RoutedEventArgs e)
@@ -46,7 +64,7 @@ namespace Part2
                 {
                     // Загрузить атрибуты из файла
                     var headers = File.ReadLines(_filePath).First().Split(',');
-                    KeyAttributeComboBox.ItemsSource = headers;
+                    KeyAttributesListBox.ItemsSource = headers;
                 }
             }
         }
@@ -93,28 +111,28 @@ namespace Part2
                 }
 
                 dataGrid.ItemsSource = dataTable.DefaultView;
-                KeyAttributeComboBox.ItemsSource = dataTable.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToList();
+                KeyAttributesListBox.ItemsSource = dataTable.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToList();
             }
         }
 
-        private async void StartSort_Click(object sender, RoutedEventArgs e)
+        private void StartSort_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(_filePath) || KeyAttributeComboBox.SelectedItem == null || SortMethodComboBox.SelectedItem == null)
+            if (string.IsNullOrEmpty(_filePath) || KeyAttributesListBox.SelectedItems.Count == 0 || SortMethodComboBox.SelectedItem == null)
             {
                 MessageBox.Show("Заполните все поля перед началом сортировки.");
                 return;
             }
 
             string sortMethod = ((ComboBoxItem)SortMethodComboBox.SelectedItem).Content.ToString();
-            string key = KeyAttributeComboBox.SelectedItem.ToString();
+            var keys = KeyAttributesListBox.SelectedItems.Cast<string>().ToList();
             int delay = int.TryParse(DelayBox.Text, out int d) ? d : 500;
 
             LogBox.Items.Add("Начинаем сортировку...");
 
-            await Task.Run(() => PerformSort(_filePath, key, sortMethod, delay));
+            PerformSort(_filePath, keys, sortMethod, delay);
         }
 
-        private void PerformSort(string filePath, string key, string method, int delay)
+        private void PerformSort(string filePath, List<string> keys, string method, int delay)
         {
             try
             {
@@ -129,9 +147,9 @@ namespace Part2
                 }
 
                 var headers = lines.First().Split(',');
-                int keyIndex = Array.IndexOf(headers, key);
+                var keyIndices = keys.Select(key => Array.IndexOf(headers, key)).ToList();
 
-                if (keyIndex == -1)
+                if (keyIndices.Any(index => index == -1))
                     throw new Exception("Ключ сортировки не найден.");
 
                 List<List<string>> chunks;
@@ -141,15 +159,18 @@ namespace Part2
                 {
                     case "Прямое слияние":
                         chunks = SplitFile(lines.Skip(1), 1000);
-                        sortedLines = PerformDirectMergeSort(chunks, keyIndex, delay);
+                        SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList());
+                        sortedLines = PerformDirectMergeSort(chunks, keyIndices, delay);
                         break;
                     case "Естественное слияние":
                         chunks = SplitFile(lines.Skip(1), 1000);
-                        sortedLines = PerformNaturalMergeSort(chunks, keyIndex, delay);
+                        SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList());
+                        sortedLines = PerformNaturalMergeSort(chunks, keyIndices, delay);
                         break;
                     case "Многопутевое слияние":
                         chunks = SplitFile(lines.Skip(1), 500); // Разделяем на большее количество кусков
-                        sortedLines = PerformMultiwayMergeSort(chunks, keyIndex, delay);
+                        SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList());
+                        sortedLines = PerformMultiwayMergeSort(chunks, keyIndices, delay);
                         break;
                     default:
                         throw new Exception("Неизвестный метод сортировки.");
@@ -190,33 +211,77 @@ namespace Part2
             {
                 LogAction($"Ошибка: {ex.Message}", 0);
             }
+            _currentStateIndex = 0;
+            UpdateState();
         }
 
-        private List<string> PerformDirectMergeSort(List<List<string>> chunks, int keyIndex, int delay)
+        private List<string> PerformDirectMergeSort(List<List<string>> chunks, List<int> keyIndices, int delay)
         {
             foreach (var chunk in chunks)
             {
-                chunk.Sort((a, b) => CompareRows(a, b, keyIndex));
+                chunk.Sort((a, b) => CompareRows(a, b, keyIndices));
                 LogAction($"Отсортирован кусок. Количество строк: {chunk.Count}", delay);
+                SaveState(ConvertChunkToDataTable(chunk, keyIndices), LogBox.Items.Cast<string>().ToList());
             }
-            return MergeChunks(chunks, keyIndex, delay);
+            return MergeChunks(chunks, keyIndices, delay);
         }
 
-        private List<string> PerformNaturalMergeSort(List<List<string>> chunks, int keyIndex, int delay)
+        private List<string> PerformNaturalMergeSort(List<List<string>> chunks, List<int> keyIndices, int delay)
         {
             // Реализация естественного слияния
             // ...
-            return MergeChunks(chunks, keyIndex, delay);
+            return MergeChunks(chunks, keyIndices, delay);
         }
 
-        private List<string> PerformMultiwayMergeSort(List<List<string>> chunks, int keyIndex, int delay)
+        private List<string> PerformMultiwayMergeSort(List<List<string>> chunks, List<int> keyIndices, int delay)
         {
             foreach (var chunk in chunks)
             {
-                chunk.Sort((a, b) => CompareRows(a, b, keyIndex));
+                chunk.Sort((a, b) => CompareRows(a, b, keyIndices));
                 LogAction($"Отсортирован кусок. Количество строк: {chunk.Count}", delay);
+                SaveState(ConvertChunkToDataTable(chunk, keyIndices), LogBox.Items.Cast<string>().ToList());
             }
-            return MergeChunks(chunks, keyIndex, delay);
+            return MergeChunks(chunks, keyIndices, delay);
+        }
+
+        private DataTable ConvertChunkToDataTable(List<string> chunk, List<int> keyIndices)
+        {
+            DataTable dataTable = new DataTable();
+            var headers = chunk.First().Split(',');
+
+            foreach (var header in headers)
+            {
+                dataTable.Columns.Add(header);
+            }
+
+            foreach (var line in chunk)
+            {
+                var rowData = line.Split(',');
+                dataTable.Rows.Add(rowData);
+            }
+
+            return dataTable;
+        }
+
+        private DataTable ConvertChunksToDataTable(List<List<string>> chunks, string[] headers)
+        {
+            DataTable dataTable = new DataTable();
+
+            foreach (var header in headers)
+            {
+                dataTable.Columns.Add(header);
+            }
+
+            foreach (var chunk in chunks)
+            {
+                foreach (var line in chunk)
+                {
+                    var rowData = line.Split(',');
+                    dataTable.Rows.Add(rowData);
+                }
+            }
+
+            return dataTable;
         }
 
         private List<string> LoadExcelDataAsXlsx(string filePath)
@@ -253,18 +318,25 @@ namespace Part2
 
         private List<List<string>> SplitFile(IEnumerable<string> lines, int chunkSize)
         {
-            return lines.Select((line, index) => new { line, index })
-                        .GroupBy(x => x.index / chunkSize)
-                        .Select(g => g.Select(x => x.line).ToList())
-                        .ToList();
+            var chunks = lines.Select((line, index) => new { line, index })
+                              .GroupBy(x => x.index / chunkSize)
+                              .Select(g => g.Select(x => x.line).ToList())
+                              .ToList();
+
+            foreach (var chunk in chunks)
+            {
+                SaveState(ConvertChunkToDataTable(chunk, new List<int>()), LogBox.Items.Cast<string>().ToList());
+            }
+
+            return chunks;
         }
 
-        private List<string> MergeChunks(List<List<string>> chunks, int keyIndex, int delay)
+        private List<string> MergeChunks(List<List<string>> chunks, List<int> keyIndices, int delay)
         {
             var result = new List<string>();
             var priorityQueue = new SortedSet<(string Value, int ChunkIndex, int RowIndex)>(
                 Comparer<(string Value, int ChunkIndex, int RowIndex)>.Create(
-                    (a, b) => CompareRows(a.Value, b.Value, keyIndex)
+                    (a, b) => CompareRows(a.Value, b.Value, keyIndices)
                 )
             );
 
@@ -291,16 +363,27 @@ namespace Part2
 
                 LogAction($"Обработана строка: {minValue}", delay);
                 HighlightRow(rowIndex);
+                SaveState(ConvertChunkToDataTable(chunks[chunkIndex], keyIndices), LogBox.Items.Cast<string>().ToList());
             }
 
             return result;
         }
 
-        private int CompareRows(string a, string b, int keyIndex)
+        private int CompareRows(string a, string b, List<int> keyIndices)
         {
-            var aValue = a.Split(',')[keyIndex];
-            var bValue = b.Split(',')[keyIndex];
-            return string.Compare(aValue, bValue, StringComparison.Ordinal);
+            var aValues = a.Split(',');
+            var bValues = b.Split(',');
+
+            foreach (var keyIndex in keyIndices)
+            {
+                int comparison = string.Compare(aValues[keyIndex], bValues[keyIndex], StringComparison.Ordinal);
+                if (comparison != 0)
+                {
+                    return comparison;
+                }
+            }
+
+            return 0;
         }
 
         private void LogAction(string message, int delay)
@@ -353,6 +436,13 @@ namespace Part2
             // Сохраняем новое состояние
             _states.Add(new TableState(dataTable.Copy(), new List<string>(log)));
             _currentStateIndex = _states.Count - 1;
+
+            // Обновляем отображение таблицы
+            Dispatcher.Invoke(() =>
+            {
+                dataGrid.ItemsSource = null; // Очищаем текущий ItemsSource
+                dataGrid.ItemsSource = dataTable.DefaultView;
+            });
         }
 
         private void GoBack()
@@ -376,32 +466,54 @@ namespace Part2
         private void UpdateState()
         {
             var currentState = _states[_currentStateIndex];
-            dataGrid.ItemsSource = currentState.DataTable.DefaultView;
-            LogBox.ItemsSource = currentState.Log;
+            Dispatcher.Invoke(() =>
+            {
+                // Очищаем текущий ItemsSource
+                dataGrid.Items.Clear();
+                LogBox.Items.Clear();
+
+                // Устанавливаем новый ItemsSource
+                dataGrid.ItemsSource = currentState.DataTable.DefaultView;
+                LogBox.ItemsSource = currentState.Log;
+            });
         }
+
+
 
         private void HighlightRow(int rowIndex)
         {
-            var view = dataGrid.ItemsSource as DataView;
-            if (view != null)
+            ClearHighlight(); // Снимаем предыдущее выделение
+
+            var dataGridRow = GetDataGridRow(rowIndex);
+            if (dataGridRow != null)
             {
-                var row = view[rowIndex].Row;
-                row["Highlight"] = true;
+                dataGridRow.Style = (Style)FindResource("HighlightedRowStyle");
             }
         }
 
         private void ClearHighlight()
         {
-            var view = dataGrid.ItemsSource as DataView;
-            if (view != null)
+            foreach (var item in dataGrid.Items)
             {
-                foreach (DataRowView rowView in view)
+                var row = dataGrid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
+                if (row != null)
                 {
-                    rowView.Row["Highlight"] = false;
+                    row.Style = null; // Сбрасываем стиль строки
                 }
             }
         }
 
+        // Метод для получения строки DataGrid по индексу
+        private DataGridRow GetDataGridRow(int rowIndex)
+        {
+            if (dataGrid.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+            {
+                dataGrid.UpdateLayout();
+                dataGrid.ScrollIntoView(dataGrid.Items[rowIndex]);
+            }
+
+            return dataGrid.ItemContainerGenerator.ContainerFromIndex(rowIndex) as DataGridRow;
+        }
 
         private async void StartAutoPlay_Click(object sender, RoutedEventArgs e)
         {
@@ -416,7 +528,7 @@ namespace Part2
 
             try
             {
-                await PerformSortWithAutoPlay(_filePath, KeyAttributeComboBox.SelectedItem.ToString(), ((ComboBoxItem)SortMethodComboBox.SelectedItem).Content.ToString(), int.Parse(DelayBox.Text));
+                await PerformSortWithAutoPlay(_filePath, KeyAttributesListBox.SelectedItems.Cast<string>().ToList(), ((ComboBoxItem)SortMethodComboBox.SelectedItem).Content.ToString(), int.Parse(DelayBox.Text));
             }
             catch (Exception ex)
             {
@@ -436,7 +548,7 @@ namespace Part2
             }
         }
 
-        private async Task PerformSortWithAutoPlay(string filePath, string key, string method, int delay)
+        private async Task PerformSortWithAutoPlay(string filePath, List<string> keys, string method, int delay)
         {
             try
             {
@@ -451,9 +563,9 @@ namespace Part2
                 }
 
                 var headers = lines.First().Split(',');
-                int keyIndex = Array.IndexOf(headers, key);
+                var keyIndices = keys.Select(key => Array.IndexOf(headers, key)).ToList();
 
-                if (keyIndex == -1)
+                if (keyIndices.Any(index => index == -1))
                     throw new Exception("Ключ сортировки не найден.");
 
                 List<List<string>> chunks;
@@ -463,15 +575,18 @@ namespace Part2
                 {
                     case "Прямое слияние":
                         chunks = SplitFile(lines.Skip(1), 1000);
-                        sortedLines = PerformDirectMergeSort(chunks, keyIndex, delay);
+                        SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList());
+                        sortedLines = PerformDirectMergeSort(chunks, keyIndices, delay);
                         break;
                     case "Естественное слияние":
                         chunks = SplitFile(lines.Skip(1), 1000);
-                        sortedLines = PerformNaturalMergeSort(chunks, keyIndex, delay);
+                        SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList());
+                        sortedLines = PerformNaturalMergeSort(chunks, keyIndices, delay);
                         break;
                     case "Многопутевое слияние":
                         chunks = SplitFile(lines.Skip(1), 500); // Разделяем на большее количество кусков
-                        sortedLines = PerformMultiwayMergeSort(chunks, keyIndex, delay);
+                        SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList());
+                        sortedLines = PerformMultiwayMergeSort(chunks, keyIndices, delay);
                         break;
                     default:
                         throw new Exception("Неизвестный метод сортировки.");
