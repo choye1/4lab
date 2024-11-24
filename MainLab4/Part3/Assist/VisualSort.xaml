@@ -1,0 +1,29 @@
+﻿<Window x:Class="Part3.Assist.VisualSort"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Part3.Assist"
+        mc:Ignorable="d"
+        Title="VisualSort" Height="450" Width="800">
+    <Grid>
+        <TextBox x:Name="tbStartArray" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,19,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="658"/>
+        <TextBox x:Name="tbCurrentArray" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,58,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="658"/>
+        <TextBox x:Name="tbFirst" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,100,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="316"/>
+        <TextBox x:Name="tbSecond" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="474,100,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="316"/>
+        <TextBox x:Name="tbFlip" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,144,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="658"/>
+        <TextBox HorizontalAlignment="Left" Height="26" Margin="400,378,0,0" VerticalContentAlignment="Center" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="168"/>
+
+        <Button Content="Старт / Стоп" HorizontalAlignment="Center" Margin="0,292,0,0" VerticalAlignment="Top" Height="35" Width="168"/>
+        <Button Content="Вперед" HorizontalAlignment="Left" Margin="499,292,0,0" VerticalAlignment="Top" Height="35" Width="168"/>
+        <Button Content="Назад" HorizontalAlignment="Left" Margin="132,292,0,0" VerticalAlignment="Top" Height="35" Width="168"/>
+
+        <Label Content="Меняем местами?" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="10,144,0,0" VerticalAlignment="Top" Width="122"/>
+        <Label Content="Скорость воспроизведения :" HorizontalAlignment="Left" Margin="232,378,0,0" VerticalAlignment="Top"/>
+        <Label Content="и" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="448,100,0,0" VerticalAlignment="Top" Width="26"/>
+        <Label Content="Что сравниваем:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="10,100,0,0" VerticalAlignment="Top" Width="122"/>
+        <Label Content="Массив сейчас:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="10,58,0,0" VerticalAlignment="Top" Width="122"/>
+        <Label Content="Исходный массив:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="10,19,0,0" VerticalAlignment="Top" Width="122"/>
+
+    </Grid>
+</Window>

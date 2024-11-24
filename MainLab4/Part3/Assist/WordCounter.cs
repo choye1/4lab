@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Part3
+namespace Part3.Assist
 {
     internal class WordCounter<T>
     {

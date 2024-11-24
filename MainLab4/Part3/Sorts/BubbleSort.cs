@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Part3.Assist;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,27 +9,40 @@ namespace Part2.Sorts
 {
     internal class BubbleSort : InterfaceSort
     {
+        LoggerForSort logger = new LoggerForSort();
         public List<string> Sort(List<string> inputData)
         {
-            string[] inputdata = inputData.ToArray();
+            logger.ClearLog();
 
-            for(int i = 0;i < inputdata.Length; i++)
+            string[] inputdata = inputData.ToArray();
+            logger.WriteLog("inAr", inputdata);
+
+            for (int i = 0; i < inputdata.Length; i++)
             {
                 bool swapped = false;
                 for (int j = 0; j < inputdata.Length - i - 1; j++)
                 {
-                    if (inputdata[j] != inputdata[j+1] &&  CompareWords(inputdata[j],inputdata[j+1]))
+                    if (inputdata[j] != inputdata[j + 1] && CompareWords(inputdata[j], inputdata[j + 1]))
                     {
+                        logger.WriteLog("cmpWr", (inputdata[j] + " " + inputdata[j + 1] + " Да").ToString());
+
+
                         swapped = true;
-                        string t = inputdata[j+1];
-                        inputdata[j+1] = inputdata[j];
+                        string t = inputdata[j + 1];
+                        inputdata[j + 1] = inputdata[j];
                         inputdata[j] = t;
                         //меняем местами
+                        logger.WriteLog("curAr", inputdata);
                     }
+
+                    logger.WriteLog("cmpWr", (inputdata[j] + " " + inputdata[j + 1] + " Нет").ToString());
+
                 }
                 if (!swapped) { break; }
 
             }
+
+            logger.WriteLog("endAr", inputdata);
 
             return inputdata.ToList();
         }
@@ -40,7 +54,7 @@ namespace Part2.Sorts
 
             if (first.ToArray()[0] == second.ToArray()[0])
             {
-                return CompareWords(first.Substring(1,first.Length-1), second.Substring(1, second.Length - 1));
+                return CompareWords(first.Substring(1, first.Length - 1), second.Substring(1, second.Length - 1));
             }
             else
             {

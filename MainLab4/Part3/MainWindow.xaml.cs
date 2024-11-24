@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using Part2.Sorts;
+using Part3.Assist;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -50,6 +51,7 @@ namespace Part3
 
         private void BtStartClick(object sender, RoutedEventArgs e)
         {
+            ClearOut();
             string path = "";
             string typeSort = "";
             try

@@ -1,0 +1,187 @@
+inAr ab ab abc bcd bcf bcg hig abc a a a a a a 
+cmpWr ab ab Нет
+cmpWr ab abc Нет
+cmpWr abc bcd Нет
+cmpWr bcd bcf Нет
+cmpWr bcf bcg Нет
+cmpWr bcg hig Нет
+cmpWr hig abc Да
+curAr ab ab abc bcd bcf bcg abc hig a a a a a a 
+cmpWr abc hig Нет
+cmpWr hig a Да
+curAr ab ab abc bcd bcf bcg abc a hig a a a a a 
+cmpWr a hig Нет
+cmpWr hig a Да
+curAr ab ab abc bcd bcf bcg abc a a hig a a a a 
+cmpWr a hig Нет
+cmpWr hig a Да
+curAr ab ab abc bcd bcf bcg abc a a a hig a a a 
+cmpWr a hig Нет
+cmpWr hig a Да
+curAr ab ab abc bcd bcf bcg abc a a a a hig a a 
+cmpWr a hig Нет
+cmpWr hig a Да
+curAr ab ab abc bcd bcf bcg abc a a a a a hig a 
+cmpWr a hig Нет
+cmpWr hig a Да
+curAr ab ab abc bcd bcf bcg abc a a a a a a hig 
+cmpWr a hig Нет
+cmpWr ab ab Нет
+cmpWr ab abc Нет
+cmpWr abc bcd Нет
+cmpWr bcd bcf Нет
+cmpWr bcf bcg Нет
+cmpWr bcg abc Да
+curAr ab ab abc bcd bcf abc bcg a a a a a a hig 
+cmpWr abc bcg Нет
+cmpWr bcg a Да
+curAr ab ab abc bcd bcf abc a bcg a a a a a hig 
+cmpWr a bcg Нет
+cmpWr bcg a Да
+curAr ab ab abc bcd bcf abc a a bcg a a a a hig 
+cmpWr a bcg Нет
+cmpWr bcg a Да
+curAr ab ab abc bcd bcf abc a a a bcg a a a hig 
+cmpWr a bcg Нет
+cmpWr bcg a Да
+curAr ab ab abc bcd bcf abc a a a a bcg a a hig 
+cmpWr a bcg Нет
+cmpWr bcg a Да
+curAr ab ab abc bcd bcf abc a a a a a bcg a hig 
+cmpWr a bcg Нет
+cmpWr bcg a Да
+curAr ab ab abc bcd bcf abc a a a a a a bcg hig 
+cmpWr a bcg Нет
+cmpWr ab ab Нет
+cmpWr ab abc Нет
+cmpWr abc bcd Нет
+cmpWr bcd bcf Нет
+cmpWr bcf abc Да
+curAr ab ab abc bcd abc bcf a a a a a a bcg hig 
+cmpWr abc bcf Нет
+cmpWr bcf a Да
+curAr ab ab abc bcd abc a bcf a a a a a bcg hig 
+cmpWr a bcf Нет
+cmpWr bcf a Да
+curAr ab ab abc bcd abc a a bcf a a a a bcg hig 
+cmpWr a bcf Нет
+cmpWr bcf a Да
+curAr ab ab abc bcd abc a a a bcf a a a bcg hig 
+cmpWr a bcf Нет
+cmpWr bcf a Да
+curAr ab ab abc bcd abc a a a a bcf a a bcg hig 
+cmpWr a bcf Нет
+cmpWr bcf a Да
+curAr ab ab abc bcd abc a a a a a bcf a bcg hig 
+cmpWr a bcf Нет
+cmpWr bcf a Да
+curAr ab ab abc bcd abc a a a a a a bcf bcg hig 
+cmpWr a bcf Нет
+cmpWr ab ab Нет
+cmpWr ab abc Нет
+cmpWr abc bcd Нет
+cmpWr bcd abc Да
+curAr ab ab abc abc bcd a a a a a a bcf bcg hig 
+cmpWr abc bcd Нет
+cmpWr bcd a Да
+curAr ab ab abc abc a bcd a a a a a bcf bcg hig 
+cmpWr a bcd Нет
+cmpWr bcd a Да
+curAr ab ab abc abc a a bcd a a a a bcf bcg hig 
+cmpWr a bcd Нет
+cmpWr bcd a Да
+curAr ab ab abc abc a a a bcd a a a bcf bcg hig 
+cmpWr a bcd Нет
+cmpWr bcd a Да
+curAr ab ab abc abc a a a a bcd a a bcf bcg hig 
+cmpWr a bcd Нет
+cmpWr bcd a Да
+curAr ab ab abc abc a a a a a bcd a bcf bcg hig 
+cmpWr a bcd Нет
+cmpWr bcd a Да
+curAr ab ab abc abc a a a a a a bcd bcf bcg hig 
+cmpWr a bcd Нет
+cmpWr ab ab Нет
+cmpWr ab abc Нет
+cmpWr abc abc Нет
+cmpWr abc a Да
+curAr ab ab abc a abc a a a a a bcd bcf bcg hig 
+cmpWr a abc Нет
+cmpWr abc a Да
+curAr ab ab abc a a abc a a a a bcd bcf bcg hig 
+cmpWr a abc Нет
+cmpWr abc a Да
+curAr ab ab abc a a a abc a a a bcd bcf bcg hig 
+cmpWr a abc Нет
+cmpWr abc a Да
+curAr ab ab abc a a a a abc a a bcd bcf bcg hig 
+cmpWr a abc Нет
+cmpWr abc a Да
+curAr ab ab abc a a a a a abc a bcd bcf bcg hig 
+cmpWr a abc Нет
+cmpWr abc a Да
+curAr ab ab abc a a a a a a abc bcd bcf bcg hig 
+cmpWr a abc Нет
+cmpWr ab ab Нет
+cmpWr ab abc Нет
+cmpWr abc a Да
+curAr ab ab a abc a a a a a abc bcd bcf bcg hig 
+cmpWr a abc Нет
+cmpWr abc a Да
+curAr ab ab a a abc a a a a abc bcd bcf bcg hig 
+cmpWr a abc Нет
+cmpWr abc a Да
+curAr ab ab a a a abc a a a abc bcd bcf bcg hig 
+cmpWr a abc Нет
+cmpWr abc a Да
+curAr ab ab a a a a abc a a abc bcd bcf bcg hig 
+cmpWr a abc Нет
+cmpWr abc a Да
+curAr ab ab a a a a a abc a abc bcd bcf bcg hig 
+cmpWr a abc Нет
+cmpWr abc a Да
+curAr ab ab a a a a a a abc abc bcd bcf bcg hig 
+cmpWr a abc Нет
+cmpWr ab ab Нет
+cmpWr ab a Да
+curAr ab a ab a a a a a abc abc bcd bcf bcg hig 
+cmpWr a ab Нет
+cmpWr ab a Да
+curAr ab a a ab a a a a abc abc bcd bcf bcg hig 
+cmpWr a ab Нет
+cmpWr ab a Да
+curAr ab a a a ab a a a abc abc bcd bcf bcg hig 
+cmpWr a ab Нет
+cmpWr ab a Да
+curAr ab a a a a ab a a abc abc bcd bcf bcg hig 
+cmpWr a ab Нет
+cmpWr ab a Да
+curAr ab a a a a a ab a abc abc bcd bcf bcg hig 
+cmpWr a ab Нет
+cmpWr ab a Да
+curAr ab a a a a a a ab abc abc bcd bcf bcg hig 
+cmpWr a ab Нет
+cmpWr ab a Да
+curAr a ab a a a a a ab abc abc bcd bcf bcg hig 
+cmpWr a ab Нет
+cmpWr ab a Да
+curAr a a ab a a a a ab abc abc bcd bcf bcg hig 
+cmpWr a ab Нет
+cmpWr ab a Да
+curAr a a a ab a a a ab abc abc bcd bcf bcg hig 
+cmpWr a ab Нет
+cmpWr ab a Да
+curAr a a a a ab a a ab abc abc bcd bcf bcg hig 
+cmpWr a ab Нет
+cmpWr ab a Да
+curAr a a a a a ab a ab abc abc bcd bcf bcg hig 
+cmpWr a ab Нет
+cmpWr ab a Да
+curAr a a a a a a ab ab abc abc bcd bcf bcg hig 
+cmpWr a ab Нет
+cmpWr a a Нет
+cmpWr a a Нет
+cmpWr a a Нет
+cmpWr a a Нет
+cmpWr a a Нет
+endAr a a a a a a ab ab abc abc bcd bcf bcg hig 
