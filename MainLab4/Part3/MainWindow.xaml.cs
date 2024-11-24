@@ -75,6 +75,9 @@ namespace Part3
                     MessageBox.Show(ex.Message);
                 }
             }
+
+            new VisualSort().Show();
+
         }
 
         private void Main(string path, string typeSort)

@@ -49,8 +49,8 @@ namespace Part2.Sorts
 
         private bool CompareWords(string first, string second) //0 - word1 > word2, 1 - word2 > word1 
         {
-            if (first.Length <= 1) return false;
-            else if (second.Length <= 1) return true;
+            if (first.Length <= 1 && (byte)first[0] < (byte)second[0]) return false;
+            else if (second.Length <= 1 && (byte)second[0] < (byte)first[0]) return true;
 
             if (first.ToArray()[0] == second.ToArray()[0])
             {
