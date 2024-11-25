@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Part2.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Сортировка таблицы" Height="900" Width="800">
+        Title="Сортировка таблицы" Height="900" Width="1600">
     <Window.Resources>
         <Style x:Key="HighlightedRowStyle" TargetType="DataGridRow">
             <Setter Property="Background" Value="LightYellow"/>
@@ -27,12 +27,15 @@
         <TextBox Name="DelayBox" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="130,200,0,0" Width="80" Text="500"/>
 
         <Button Content="Начать сортировку" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,240,0,0" Width="150" Click="StartSort_Click"/>
-        <ListBox Name="LogBox" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,280,0,0" Width="767" Height="140"/>
-
-        <DataGrid x:Name="dataGrid" AutoGenerateColumns="True" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,430,0,0" Width="767" Height="500"/>
+        <ListBox Name="LogBox" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,280,0,0" Width="620" Height="580"/>
+        <DataGrid x:Name="ResultDataGrid"
+          AutoGenerateColumns="True"
+          IsReadOnly="True" Margin="1450,50,45,24" />
+        <DataGrid x:Name="dataGrid" AutoGenerateColumns="True" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="662,50,0,0" Width="768" Height="810" VirtualizingStackPanel.IsVirtualizing="False"/>
         <Button Content="Назад" HorizontalAlignment="Left" Margin="200,240,0,0" VerticalAlignment="Top" Width="65" Click="GoBack_Click"/>
-        <Button Content="Вперед" HorizontalAlignment="Left" Margin="297,240,0,0" VerticalAlignment="Top" Width="65" Click="GoForward_Click"/>
-        <!--<Button Content="Автопроигрывание" HorizontalAlignment="Left" Margin="394,240,0,0" VerticalAlignment="Top" Width="100" Click="StartAutoPlay_Click"/>
-        <Button Content="Остановка" HorizontalAlignment="Left" Margin="504,240,0,0" VerticalAlignment="Top" Width="100" Click="StopAutoPlay_Click"/>-->
+        <Button Content="Вперед" HorizontalAlignment="Left" Margin="280,240,0,0" VerticalAlignment="Top" Width="64" Click="GoForward_Click"/>
+        <Label Content="Результат" HorizontalAlignment="Left" Height="26" Margin="1450,20,0,0" VerticalAlignment="Top" Width="105" AutomationProperties.IsColumnHeader="True" HorizontalContentAlignment="Center"/>
+        <Button Content="Автопроигрывание" HorizontalAlignment="Left" Margin="391,240,0,0" VerticalAlignment="Top" Width="122" Click="StartAutoPlay_Click"/>
+        <Button Content="Остановка" HorizontalAlignment="Left" Margin="530,240,0,0" VerticalAlignment="Top" Width="100" Click="StopAutoPlay_Click"/>
     </Grid>
 </Window>
