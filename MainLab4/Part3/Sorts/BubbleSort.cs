@@ -24,7 +24,7 @@ namespace Part2.Sorts
                 {
                     if (inputdata[j] != inputdata[j + 1] && CompareWords(inputdata[j], inputdata[j + 1]))
                     {
-                        logger.WriteLog("cmpWr", (inputdata[j] + " " + inputdata[j + 1] + " Да").ToString());
+                        logger.WriteLog("cmpWr", inputdata[j] + " " + inputdata[j + 1] + " Да " + GetString(inputdata).ToString());
 
 
                         swapped = true;
@@ -32,10 +32,12 @@ namespace Part2.Sorts
                         inputdata[j + 1] = inputdata[j];
                         inputdata[j] = t;
                         //меняем местами
-                        logger.WriteLog("curAr", inputdata);
                     }
 
-                    logger.WriteLog("cmpWr", (inputdata[j] + " " + inputdata[j + 1] + " Нет").ToString());
+                    else
+                    {
+                        logger.WriteLog("cmpWr", inputdata[j] + " " + inputdata[j + 1] + " Нет " + GetString(inputdata).ToString());
+                    }
 
                 }
                 if (!swapped) { break; }
@@ -62,5 +64,17 @@ namespace Part2.Sorts
             }
 
         }
+
+        private string GetString<T>(T[] val)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (T t in val)
+            {
+                sb.Append(t + " ");
+            }
+
+            return sb.ToString();
+        }
+
     }
 }

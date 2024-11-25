@@ -12,18 +12,28 @@ namespace Part3.Assist
     {
         static string path = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetCurrentDirectory()).ToString()).ToString()).ToString() + "\\log.txt";
         string[] log = File.ReadAllLines(path);
-        int cursor = 0;  //указывает, на какой строке мы сейчас
+        public int cursor = 0;  //указывает, на какой строке мы сейчас
 
         public string[] GetBack()
         {
             try
             {
-                return log[cursor --].Replace("\n", "").Replace("\r", "").Split(" ");
+                if (cursor <= 1)
+                {
+                    MessageBox.Show("Вы в самом начале!");
+                    throw new Exception();
+
+                }
+                else
+                {
+                    var output = log[cursor - 1].Replace("\n", "").Replace("\r", "").Split(" ");
+                    cursor--;
+                    return output;
+                }
             }
             catch
             {
-                cursor = 0;
-                MessageBox.Show("Вы в самом начале!");
+                cursor = 1;
                 return new[] { "0", "0", "0" };
 
             }
@@ -49,7 +59,9 @@ namespace Part3.Assist
         {
             try
             {
-                return log[cursor++].Replace("\n", "").Replace("\r", "").Split(" ");
+                var output = log[cursor + 1].Replace("\n", "").Replace("\r", "").Split(" ");
+                cursor ++;
+                return output;
             }
             catch
             {

@@ -1,11 +1,14 @@
-inAr c b a 
-cmpWr c b Да
-curAr b c a 
-cmpWr b c Нет
-cmpWr c a Да
-curAr b a c 
-cmpWr a c Нет
-cmpWr b a Да
-curAr a b c 
-cmpWr a b Нет
-endAr a b c 
+inAr c b a d q e 
+cmpWr c b Да c b a d q e 
+cmpWr c a Да b c a d q e 
+cmpWr c d Нет b a c d q e 
+cmpWr d q Нет b a c d q e 
+cmpWr q e Да b a c d q e 
+cmpWr b a Да b a c d e q 
+cmpWr b c Нет a b c d e q 
+cmpWr c d Нет a b c d e q 
+cmpWr d e Нет a b c d e q 
+cmpWr a b Нет a b c d e q 
+cmpWr b c Нет a b c d e q 
+cmpWr c d Нет a b c d e q 
+endAr a b c d e q 

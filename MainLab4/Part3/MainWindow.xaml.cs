@@ -188,7 +188,7 @@ namespace Part3
         static string RemoveNonLettersAndSpaces(string input)
         {
             // Используем регулярное выражение для удаления всех символов, кроме букв и пробелов
-            return Regex.Replace(input, @"[^a-zA-Zа-яА-Я\s]", "");
+            return Regex.Replace(input, @"[^a-zA-Zа-яА-Я\s]", " ");
         }
 
         private void WriteList<T>(List<T> data)

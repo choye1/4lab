@@ -23,7 +23,7 @@ namespace Part3.Assist
         public VisualSort()
         {
             InitializeComponent();
-            ParseStep(logReader.GetNext());
+            ParseStep(logReader.GetCurrent());
         }
 
         
@@ -36,6 +36,11 @@ namespace Part3.Assist
             {
                 case "inAr":
                     tbStartArray.Text = GiveStringStep(step);
+                    tbCurrentArray.Text = "";
+                    tbFirst.Text = "";
+                    tbSecond.Text = "";
+                    tbFlip.Text = "";
+                    tbFinalAr.Text = "";
                     break;
                 case "curAr":
                     tbCurrentArray.Text = GiveStringStep(step);
@@ -43,13 +48,21 @@ namespace Part3.Assist
                 case "cmpWr":
                     tbFirst.Text = step[1];
                     tbSecond.Text = step[2];
-                    tbFlip.Text = step[3];
+                    tbFlip.Text = step[3] + 
+                        (step[3] == "да" ? 
+                        ", так как " + step[1] + " по лексикографическому порядку стоит перед " + step [2] :
+                        ", так как " + step[1] + " по лексикографическому порядку стоит после " + step[2]);
+                    tbCurrentArray.Text = GiveStringStep(step, 3);
                     break;
                 case "endAr":
+                    tbCurrentArray.Text = GiveStringStep(step);
                     tbFinalAr.Text = GiveStringStep(step);
                     break;
             }
         }
+
+
+
 
         private string GiveStringStep(string[] step)
         {
@@ -57,6 +70,17 @@ namespace Part3.Assist
             for (int i = 1; i < step.Length; i++)
             {
                 stringBuilder.Append(step[i] + " "); 
+            }
+
+            return stringBuilder.ToString();
+        }
+
+        private string GiveStringStep(string[] step, int skip)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i = 1 + skip; i < step.Length; i++)
+            {
+                stringBuilder.Append(step[i] + " ");
             }
 
             return stringBuilder.ToString();
