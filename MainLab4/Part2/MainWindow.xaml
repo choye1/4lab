@@ -32,7 +32,7 @@
         <DataGrid x:Name="dataGrid" AutoGenerateColumns="True" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,430,0,0" Width="767" Height="500"/>
         <Button Content="Назад" HorizontalAlignment="Left" Margin="200,240,0,0" VerticalAlignment="Top" Width="65" Click="GoBack_Click"/>
         <Button Content="Вперед" HorizontalAlignment="Left" Margin="297,240,0,0" VerticalAlignment="Top" Width="65" Click="GoForward_Click"/>
-        <Button Content="Автопроигрывание" HorizontalAlignment="Left" Margin="394,240,0,0" VerticalAlignment="Top" Width="100" Click="StartAutoPlay_Click"/>
-        <Button Content="Остановка" HorizontalAlignment="Left" Margin="504,240,0,0" VerticalAlignment="Top" Width="100" Click="StopAutoPlay_Click"/>
+        <!--<Button Content="Автопроигрывание" HorizontalAlignment="Left" Margin="394,240,0,0" VerticalAlignment="Top" Width="100" Click="StartAutoPlay_Click"/>
+        <Button Content="Остановка" HorizontalAlignment="Left" Margin="504,240,0,0" VerticalAlignment="Top" Width="100" Click="StopAutoPlay_Click"/>-->
     </Grid>
 </Window>
