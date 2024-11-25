@@ -17,10 +17,10 @@ namespace Part3.Assist
     /// <summary>
     /// Логика взаимодействия для VisualSort.xaml
     /// </summary>
-    public partial class VisualSort : Window
+    public partial class VisualBubbleSort : Window
     {
         LogReader logReader = new LogReader();
-        public VisualSort()
+        public VisualBubbleSort()
         {
             InitializeComponent();
             ParseStep(logReader.GetCurrent());

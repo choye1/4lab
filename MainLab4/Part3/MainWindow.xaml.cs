@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using Part2.Sorts;
 using Part3.Assist;
+using Part3.Sorts;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -76,7 +77,6 @@ namespace Part3
                 }
             }
 
-            new VisualSort().Show();
 
         }
 
@@ -98,7 +98,7 @@ namespace Part3
             {
                 result = StartSort(inputData, typeSort);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -133,15 +133,33 @@ namespace Part3
             {
                 case "Modificated Bubble Sort":
                     result = StartBubbleSort(inputData);
+                    new VisualBubbleSort().Show();
                     break;
-                case "ABC-Sort":
-                    throw new Exception("Ветка в разработке");
+
+                case "Radix-Sort":
+                    result = StartRadixSort(inputData);
+                    new VisualRadixSort().Show();
                     break;
+
                 default: throw new Exception("Такой сортировки пока нет");
 
             }
 
             return result;
+        }
+
+        private List<string> StartRadixSort(List<string> inputData)
+        {
+            try
+            {
+                RadixSort rs = new RadixSort();
+                return rs.Sort(inputData);
+            }
+            catch
+            {
+                throw new Exception("Ошибка при сортировке");
+            }
+
         }
 
         private List<string> StartBubbleSort(List<string> inputData)

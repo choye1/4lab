@@ -13,8 +13,8 @@
         <Label Content="Алгоритм для сортировки :" HorizontalAlignment="Left" Margin="97,69,0,0" VerticalAlignment="Top"/>
 
         <ComboBox x:Name="CbSortAlg" HorizontalAlignment="Left" Height="26" Margin="306,69,0,0" VerticalAlignment="Top" Width="365">
-            <ComboBoxItem Content="Modificated Bubble Sort" Name="a"/>
-            <ComboBoxItem Content="ABC-Sort" Name="b"/>
+            <ComboBoxItem Content="Modificated Bubble Sort" />
+            <ComboBoxItem Content="Radix-Sort" />
         </ComboBox>
         <Button x:Name="Start" Content="Сортировать" HorizontalAlignment="Left" Margin="676,70,0,0" VerticalAlignment="Top" Height="26" Width="84" Click="BtStartClick"/>
         <TextBox x:Name="tbOut" HorizontalAlignment="Left" Height="244" Margin="97,154,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="663"/>
