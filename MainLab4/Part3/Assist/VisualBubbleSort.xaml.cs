@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -26,7 +27,7 @@ namespace Part3.Assist
             ParseStep(logReader.GetCurrent());
         }
 
-        
+
 
 
 
@@ -48,9 +49,9 @@ namespace Part3.Assist
                 case "cmpWr":
                     tbFirst.Text = step[1];
                     tbSecond.Text = step[2];
-                    tbFlip.Text = step[3] + 
-                        (step[3] == "да" ? 
-                        ", так как " + step[1] + " по лексикографическому порядку стоит перед " + step [2] :
+                    tbFlip.Text = step[3] +
+                        (step[3] == "да" ?
+                        ", так как " + step[1] + " по лексикографическому порядку стоит перед " + step[2] :
                         ", так как " + step[1] + " по лексикографическому порядку стоит после " + step[2]);
                     tbCurrentArray.Text = GiveStringStep(step, 3);
                     break;
@@ -69,7 +70,7 @@ namespace Part3.Assist
             StringBuilder stringBuilder = new StringBuilder();
             for (int i = 1; i < step.Length; i++)
             {
-                stringBuilder.Append(step[i] + " "); 
+                stringBuilder.Append(step[i] + " ");
             }
 
             return stringBuilder.ToString();
@@ -98,8 +99,10 @@ namespace Part3.Assist
 
         private void StartStop(object sender, RoutedEventArgs e)
         {
-
-
+            
         }
+
+
+        
     }
 }

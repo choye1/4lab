@@ -19,64 +19,92 @@ namespace Part3.Assist
     /// </summary>
     public partial class VisualRadixSort : Window
     {
-
-        private List<string> arr;
-        private int currentStep;
-        private int maxLength;
-        private List<List<string>> bins;
+        LogReader lR = new LogReader();
 
         public VisualRadixSort()
         {
             InitializeComponent();
-            arr = new List<string> { "apple", "banana", "cherry", "date", "fig", "grape" };
-            currentStep = 0;
-            maxLength = arr.Select(s => s.Length).Max();
-            bins = Enumerable.Range(0, 256).Select(_ => new List<string>()).ToList();
-            StepTextBlock.Text = "Шаг " + (currentStep + 1);
-            UpdateBinsListBox();
+            ParseStep(lR.GetCurrent());
         }
-       private void UpdateBinsListBox()
+        private void ParseStep(string[] step)
         {
-            BinsListBox.Items.Clear();
-            for (int i = 0; i < bins.Count; i++)
+            switch (step[0])
             {
-                if (bins[i].Count > 0)
-                {
-                    BinsListBox.Items.Add("Bin " + i + ": " + string.Join(", ", bins[i]));
-                }
+                case "inAr":
+                    tbStartArray.Text = GiveStringStep(step);
+                    tbFinalAr.Text = "";
+                    break;
+
+                case "endAr":
+                    tbFinalAr.Text = GiveStringStep(step);
+                    break;
+
+                case "curLet":
+                    tbCurLet.Text = step[1];
+                    break;
+
+                case "maxLen":
+                    tbMaxLen.Text = step[1];
+                    break;
+
+                case "curGroups":
+                    WriteCurGroups(step);
+                    break;
+            }
+        }
+
+        private void WriteCurGroups(string[] step)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 1; i < step.Length; i++)
+            {
+                sb.Append(step[i] + "\n");
+            }
+            tbCurGroups.Text = sb.ToString();
+        }
+
+        private string GiveStringStep(string[] step)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i = 1; i < step.Length; i++)
+            {
+                stringBuilder.Append(step[i] + " ");
             }
 
+            return stringBuilder.ToString();
+        }
+
+        private string GiveStringStep(string[] step, int skip)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i = 1 + skip; i < step.Length; i++)
+            {
+                stringBuilder.Append(step[i] + " ");
+            }
+
+            return stringBuilder.ToString();
+        }
+
+        private void Next(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ParseStep(lR.GetNext());
+                ParseStep(lR.GetNext());
+            }
+            catch { }
 
         }
 
-        private void Window_MouseDoubleClick(object sender,  EventArgs e)
+        private void Back(object sender, RoutedEventArgs e)
         {
-            if (currentStep < maxLength)
+            try
             {
-                foreach (string s in arr)
-                {
-                    int index = currentStep < s.Length ? s[currentStep] : 0;
-                    bins[index].Add(s);
-                }
-
-                int idx = 0;
-                foreach (List<string> bin in bins)
-                {
-                    foreach (string s in bin)
-                    {
-                        arr[idx++] = s;
-                    }
-                }
-
-                bins = Enumerable.Range(0, 256).Select(_ => new List<string>()).ToList();
-                currentStep++;
-                StepTextBlock.Text = "Шаг " + (currentStep + 1);
-                UpdateBinsListBox();
+                ParseStep(lR.GetBack());
+                ParseStep(lR.GetBack());
             }
-            else
-            {
-                MessageBox.Show("Сортировка завершена!", "Информация");
-            }
+            catch { }
+
         }
     }
 }

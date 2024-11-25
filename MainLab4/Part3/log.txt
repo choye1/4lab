@@ -1,8 +1,19 @@
-inAr babuin abrikos aaaa abcdefg 
-cmpWr babuin abrikos Да babuin abrikos aaaa abcdefg 
-cmpWr babuin aaaa Да abrikos babuin aaaa abcdefg 
-cmpWr babuin abcdefg Да abrikos aaaa babuin abcdefg 
-cmpWr abrikos aaaa Да abrikos aaaa abcdefg babuin 
-cmpWr abrikos abcdefg Да aaaa abrikos abcdefg babuin 
-cmpWr aaaa abcdefg Нет aaaa abcdefg abrikos babuin 
-endAr aaaa abcdefg abrikos babuin 
+inAr olen bobr capibara copibara aboba 
+maxLen 8
+curLet 8
+curGroups 1:olen,bobr,aboba, 2:capibara,copibara, 
+curLet 7
+curGroups 1:olen,bobr,aboba, 2:capibara,copibara, 
+curLet 6
+curGroups 1:olen,bobr,aboba, 2:capibara,copibara, 
+curLet 5
+curGroups 1:olen,bobr, 2:aboba, 3:capibara,copibara, 
+curLet 4
+curGroups 1:aboba, 2:capibara,copibara, 3:olen, 4:bobr, 
+curLet 3
+curGroups 1:bobr, 2:olen, 3:aboba, 4:capibara,copibara, 
+curLet 2
+curGroups 1:capibara, 2:aboba, 3:olen, 4:bobr,copibara, 
+curLet 1
+curGroups 1:aboba, 2:bobr, 3:capibara,copibara, 4:olen, 
+endAr aboba bobr capibara copibara olen 

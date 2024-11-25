@@ -67,6 +67,7 @@ namespace Part3.Assist
             {
                 cursor = log.Length-1;
                 MessageBox.Show("Вы дошли до конца!");
+                throw new Exception();
                 return new[] {"0","0","0" };
             }
         }

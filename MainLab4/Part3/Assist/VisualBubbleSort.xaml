@@ -12,14 +12,14 @@
         <TextBox x:Name="tbFirst" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,100,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="316"/>
         <TextBox x:Name="tbSecond" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="474,100,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="316"/>
         <TextBox x:Name="tbFlip" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,144,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="658"/>
-        <TextBox HorizontalAlignment="Left" Height="26" Margin="400,378,0,0" VerticalContentAlignment="Center" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="168"/>
+        <TextBox x:Name="tbStopTime" HorizontalAlignment="Left" Height="26" Margin="400,378,0,0" VerticalContentAlignment="Center" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="168"/>
 
         <Button Content="Старт / Стоп" HorizontalAlignment="Center" Margin="0,292,0,0" VerticalAlignment="Top" Height="35" Width="168" Click="StartStop"/>
         <Button Content="Вперед" HorizontalAlignment="Left" Margin="499,292,0,0" VerticalAlignment="Top" Height="35" Width="168" Click ="NextStep"/>
         <Button Content="Назад" HorizontalAlignment="Left" Margin="132,292,0,0" VerticalAlignment="Top" Height="35" Width="168" Click="BackStep"/>
 
         <Label Content="Меняем местами?" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="10,144,0,0" VerticalAlignment="Top" Width="122"/>
-        <Label Content="Скорость воспроизведения :" HorizontalAlignment="Left" Margin="232,378,0,0" VerticalAlignment="Top"/>
+        <Label Content="Задержка воспроизведения (сек):" HorizontalAlignment="Left" Margin="207,378,0,0" VerticalAlignment="Top"/>
         <Label Content="и" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="448,100,0,0" VerticalAlignment="Top" Width="26"/>
         <Label Content="Что сравниваем:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="10,100,0,0" VerticalAlignment="Top" Width="122"/>
         <Label Content="Массив сейчас:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="10,58,0,0" VerticalAlignment="Top" Width="122"/>
