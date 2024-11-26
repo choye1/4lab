@@ -167,12 +167,12 @@ namespace Part2
                         sortedLines = PerformDirectMergeSort(chunks, keyIndices, delay);
                         break;
                     case "Естественное слияние":
-                        chunks = SplitFile(lines.Skip(1), 1000);
+                        chunks = SplitFile(lines.Skip(1), (int)lines.Count() / 2);
                         SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), new List<int>());
                         sortedLines = PerformNaturalMergeSort(chunks, keyIndices, delay);
                         break;
                     case "Многопутевое слияние":
-                        chunks = SplitFile(lines.Skip(1), 500); // Разделяем на большее количество кусков
+                        chunks = SplitFile(lines.Skip(1), (int)lines.Count() / 5); // Разделяем на большее количество кусков
                         SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), new List<int>());
                         sortedLines = PerformMultiwayMergeSort(chunks, keyIndices, delay);
                         break;
@@ -241,21 +241,31 @@ namespace Part2
                     var key = chunk[i];
                     int j = i - 1;
 
-                    // Выделяем строку, которую будем перемещать
-                    HighlightRow(i);
-                    LogAction($"Выделяем строку {i} для перемещения: {key}", 0);
+                    // Очищаем предыдущие подсветки
+                    ClearHighlight();
 
+                    // Выделяем строку, которую будем перемещать
+                    highlightedRows.Add(i);
+                    LogAction($"Выделяем строку {i} для перемещения: {key}", 0);
+                    SaveState(ConvertChunkToDataTable(chunk, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+                    highlightedRows.Clear();
                     while (j >= 0 && CompareRows(chunk[j], key, keyIndices) > 0)
                     {
                         chunk[j + 1] = chunk[j];
                         j--;
+
+                        // Выделяем строку, которую перемещаем
+                        highlightedRows.Add(j + 1);
+                        LogAction($"Перемещаем строку {j + 1} на позицию {j + 2}: {chunk[j + 1]}", 0);
+                        SaveState(ConvertChunkToDataTable(chunk, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+                        highlightedRows.Clear();
                     }
                     chunk[j + 1] = key;
 
-                    // Выделяем строку после перемещения
-                    HighlightRow(j + 1);
+                    highlightedRows.Add(j + 1);
                     LogAction($"Строка {i} перемещена на позицию {j + 1}: {key}", 0);
-
+                    SaveState(ConvertChunkToDataTable(chunk, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+                    highlightedRows.Clear();
                     count++;
                 }
 
@@ -272,28 +282,49 @@ namespace Part2
         }
 
 
+
+
         private List<List<string>> SplitIntoNaturalRuns(List<string> data, List<int> keyIndices)
         {
             var runs = new List<List<string>>();
             var currentRun = new List<string> { data[0] };
+            List<int> highlightedRows = new List<int>();
+
+            LogAction("Начинаем разбиение данных на естественные подпоследовательности.", 0);
+            SaveState(ConvertChunkToDataTable(data, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
 
             for (int i = 1; i < data.Count; i++)
             {
+
+                highlightedRows.Add(i - 1);
+                highlightedRows.Add(i);
+
+                LogAction($"Сравниваем строки: '{data[i - 1]}' и '{data[i]}'.", 0);
+                SaveState(ConvertChunkToDataTable(data, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+                highlightedRows.Clear();
                 if (CompareRows(data[i - 1], data[i], keyIndices) <= 0)
                 {
                     currentRun.Add(data[i]);
+                    LogAction($"Строка {i} добавлена в текущую подпоследовательность.", 0);
                 }
                 else
                 {
                     runs.Add(currentRun);
+                    LogAction($"Текущая подпоследовательность завершена. Количество строк: {currentRun.Count}", 0);
+                    SaveState(ConvertChunkToDataTable(data, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+
                     currentRun = new List<string> { data[i] };
+                    LogAction($"Начинаем новую подпоследовательность с строки {i}.", 0);
                 }
             }
-            runs.Add(currentRun);
 
+            runs.Add(currentRun);
             LogAction($"Разбито на {runs.Count} естественных подпоследовательностей.", 0);
+            SaveState(ConvertChunkToDataTable(data, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+
             return runs;
         }
+
 
         private List<string> MergeChunks(List<List<string>> chunks, List<int> keyIndices, int delay, List<int> highlightedRows)
         {
@@ -302,15 +333,19 @@ namespace Part2
                 Comparer<(string Value, int ChunkIndex, int RowIndex)>.Create(
                     (a, b) =>
                     {
+                        // Очищаем предыдущие подсветки
+                        ClearHighlight();
+
                         // Подсвечиваем строки, которые сравниваются
                         HighlightRow(a.RowIndex); // Подсвечиваем строку из очереди
                         HighlightRow(b.RowIndex); // Подсвечиваем строку, с которой сравниваем
-                        highlightedRows.Add(a.RowIndex);
-                        highlightedRows.Add(b.RowIndex);
+                        highlightedRows.Add(a.RowIndex + a.ChunkIndex * chunks[a.ChunkIndex].Count);
+                        highlightedRows.Add(b.RowIndex + b.ChunkIndex * chunks[b.ChunkIndex].Count);
 
                         LogAction($"Сравниваем строки: '{a.Value}' (чанк {a.ChunkIndex}, строка {a.RowIndex}) и '{b.Value}' (чанк {b.ChunkIndex}, строка {b.RowIndex}).", 0);
 
                         SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+                        highlightedRows.Clear();
 
                         // Сравнение строк на основе ключей
                         int comparison = CompareRows(a.Value, b.Value, keyIndices);
@@ -335,9 +370,14 @@ namespace Part2
                 {
                     priorityQueue.Add((chunks[i][0], i, 0));
                     LogAction($"Добавлена первая строка из чанка {i} в очередь приоритетов: {chunks[i][0]}", 0);
-                    HighlightRow(0); // Подсвечиваем добавленную строку
-                    highlightedRows.Add(0); // Добавляем строку в список подсветок
+
+                    // Очищаем предыдущие подсветки
+                    ClearHighlight();
+
+                    HighlightRow(i*chunks[i].Count); // Подсвечиваем добавленную строку
+                    highlightedRows.Add(i * chunks[i].Count); // Добавляем строку в список подсветок
                     SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+                    highlightedRows.Clear();
                 }
             }
 
@@ -365,10 +405,10 @@ namespace Part2
 
                 LogAction($"Извлечена минимальная строка из очереди: '{minValue}' из чанка {chunkIndex}, строка {rowIndex}.", 0);
 
+
                 // Подсвечиваем извлечённую строку
                 HighlightRow(rowIndex);
                 highlightedRows.Add(rowIndex);
-
                 // Подсвечиваем строки в очереди
                 foreach (var item in priorityQueue)
                 {
@@ -377,6 +417,7 @@ namespace Part2
                 }
 
                 SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+                highlightedRows.Clear();
 
                 // Проверяем, есть ли следующая строка в текущем чанке
                 if (rowIndex + 1 < chunks[chunkIndex].Count)
@@ -385,11 +426,13 @@ namespace Part2
                     priorityQueue.Add((nextValue, chunkIndex, rowIndex + 1));
                     LogAction($"Добавлена следующая строка из чанка {chunkIndex}: '{nextValue}'.", 0);
 
+
                     // Подсвечиваем текущую строку чанка и её отображение в очереди
                     HighlightRow(rowIndex + 1); // Подсвечиваем добавляемую строку
                     highlightedRows.Add(rowIndex + 1); // Добавляем строку в список подсветок
 
                     SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+                    highlightedRows.Clear();
                 }
 
                 LogAction("Текущее состояние очереди приоритетов:", 0);
@@ -398,12 +441,15 @@ namespace Part2
                     LogAction($"Чанк {item.ChunkIndex}, строка {item.RowIndex}, значение: {item.Value}.", 0);
                     HighlightRow(item.RowIndex); // Подсвечиваем строку в очереди приоритетов
                     highlightedRows.Add(item.RowIndex); // Добавляем строку в список подсветок
+                    SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+                    highlightedRows.Clear();
                 }
             }
 
             LogAction("Слияние кусков завершено.", 0);
             return result;
         }
+
         private List<string> PerformNaturalMergeSort(List<List<string>> chunks, List<int> keyIndices, int delay)
         {
             List<int> highlightedRows = new List<int>();
@@ -437,7 +483,7 @@ namespace Part2
             Parallel.ForEach(chunks, chunk =>
             {
                 InsertionSort(chunk, keyIndices);
-                LogAction($"Отсортирован кусок. Количество строк: {chunk.Count}", delay);
+                LogAction($"Отсортирован кусок. Количество строк: {chunk.Count}", 0);
             });
 
             SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
@@ -449,31 +495,77 @@ namespace Part2
 
         private void InsertionSort(List<string> chunk, List<int> keyIndices)
         {
+            List<int> highlightedRows = new List<int>();
+
+            LogAction("Начинаем сортировку данных внутри чанка методом вставок.", 0);
+            SaveState(ConvertChunkToDataTable(chunk, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+
             for (int i = 1; i < chunk.Count; i++)
             {
                 var key = chunk[i];
                 int j = i - 1;
 
+                // Очищаем предыдущие подсветки
+                ClearHighlight();
+
+                // Выделяем строку, которую будем перемещать
+                HighlightRow(i);
+                highlightedRows.Add(i);
+                LogAction($"Выделяем строку {i} для перемещения: {key}", 0);
+                SaveState(ConvertChunkToDataTable(chunk, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+                highlightedRows.Clear();
+
                 while (j >= 0 && CompareRows(chunk[j], key, keyIndices) > 0)
                 {
                     chunk[j + 1] = chunk[j];
                     j--;
+
+                    // Очищаем предыдущие подсветки
+                    ClearHighlight();
+
+                    // Выделяем строку, которую перемещаем
+                    HighlightRow(j + 1);
+                    highlightedRows.Add(j + 1);
+                    LogAction($"Перемещаем строку {j + 1} на позицию {j + 2}: {chunk[j + 1]}", 0);
+                    SaveState(ConvertChunkToDataTable(chunk, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+                    highlightedRows.Clear();
                 }
+
                 chunk[j + 1] = key;
+
+                // Очищаем предыдущие подсветки
+                ClearHighlight();
+
+                // Выделяем строку после перемещения
+                HighlightRow(j + 1);
+                highlightedRows.Add(j + 1);
+                LogAction($"Строка {i} перемещена на позицию {j + 1}: {key}", 0);
+                SaveState(ConvertChunkToDataTable(chunk, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+                highlightedRows.Clear();
             }
+
+            LogAction("Сортировка данных внутри чанка методом вставок завершена.", 0);
+            SaveState(ConvertChunkToDataTable(chunk, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
         }
+
+
         private List<string> MergeChunksParallel(List<List<string>> chunks, List<int> keyIndices, int delay, List<int> highlightedRows)
         {
             var result = new ConcurrentQueue<string>();
             var priorityQueue = new ConcurrentQueue<(string Value, int ChunkIndex, int RowIndex)>();
 
             LogAction("Инициализация очереди приоритетов для слияния кусков.", 0);
+            // Инициализация: добавляем первую строку каждого чанка в очередь
             for (int i = 0; i < chunks.Count; i++)
             {
                 if (chunks[i].Count > 0)
                 {
                     priorityQueue.Enqueue((chunks[i][0], i, 0));
                     LogAction($"Добавлена первая строка из чанка {i} в очередь приоритетов: {chunks[i][0]}", 0);
+
+                    highlightedRows.Add(0 + i * chunks[i].Count); // Добавляем строку в список подсветок
+                    SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+                    highlightedRows.Clear();
                 }
             }
 
@@ -486,21 +578,32 @@ namespace Part2
                     {
                         result.Enqueue(minElement.Value);
 
+                        highlightedRows.Add(minElement.RowIndex);
+                        LogAction($"Извлечена минимальная строка из очереди: '{minElement.Value}' из чанка {minElement.ChunkIndex}, строка {minElement.RowIndex}.", 0);
+                        SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+                        highlightedRows.Clear();
+
                         // Добавление следующего элемента чанка в очередь
                         if (minElement.RowIndex + 1 < chunks[minElement.ChunkIndex].Count)
                         {
                             var nextValue = chunks[minElement.ChunkIndex][minElement.RowIndex + 1];
                             priorityQueue.Enqueue((nextValue, minElement.ChunkIndex, minElement.RowIndex + 1));
+                            LogAction($"Добавлена следующая строка из чанка {minElement.ChunkIndex}: '{nextValue}'.", 0);
+
+                            highlightedRows.Add(minElement.RowIndex + 1 + minElement.ChunkIndex * chunks[minElement.ChunkIndex].Count);
+                            SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
+                            highlightedRows.Clear();
                         }
                     }
                 }
             });
 
-            LogAction("Слияние кусков завершено.", delay);
+            LogAction("Слияние кусков завершено.", 0);
 
             // Конвертируем ConcurrentQueue в List
             return result.ToList();
         }
+
 
 
 
@@ -689,6 +792,7 @@ namespace Part2
             if (_currentStateIndex < _states.Count - 1)
             {
                 _currentStateIndex++;
+                ClearHighlight();
                 UpdateState();
             }
         }
@@ -714,6 +818,7 @@ namespace Part2
                 LogBox.Items.Refresh();
 
                 // Применяем подсветку строк
+                ClearHighlight();
                 foreach (var rowIndex in currentState.HighlightedRows)
                 {
                     HighlightRow(rowIndex);
@@ -728,8 +833,6 @@ namespace Part2
 
         private void HighlightRow(int rowIndex)
         {
-            ClearHighlight(); // Снимаем предыдущее выделение
-
             var dataGridRow = GetDataGridRow(rowIndex);
             if (dataGridRow != null)
             {
@@ -803,7 +906,6 @@ namespace Part2
             }
             catch (OperationCanceledException)
             {
-                LogAction("Автопроигрывание остановлено.", 0);
             }
             finally
             {
@@ -835,6 +937,30 @@ namespace Part2
             }
         }
 
+        private void ClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Очистка всех данных и сброс состояния
+            _filePath = string.Empty;
+            FilePathBox.Text = string.Empty;
+            KeyAttributesListBox.ItemsSource = null;
+            SortMethodComboBox.SelectedItem = null;
+            DelayBox.Text = string.Empty;
+            LogBox.Items.Clear();
+            dataGrid.ItemsSource = null;
+            _states.Clear();
+            _currentStateIndex = -1;
+            _isAutoPlaying = false;
+            if (_cancellationTokenSource != null)
+            {
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource = null;
+            }
+
+            // Очистка подсветки строк
+            ClearHighlight();
+
+            MessageBox.Show("Данные очищены. Вы можете начать сортировку заново.");
+        }
 
         public class TableState
         {

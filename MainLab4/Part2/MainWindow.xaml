@@ -27,14 +27,15 @@
         <TextBox Name="DelayBox" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="130,200,0,0" Width="80" Text="500"/>
 
         <Button Content="Начать сортировку" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,240,0,0" Width="150" Click="StartSort_Click"/>
-        <ListBox Name="LogBox" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,280,0,0" Width="620" Height="580"/>
+        <ListBox Name="LogBox" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,280,0,0" Width="620" Height="529"/>
         <DataGrid x:Name="ResultDataGrid"
           AutoGenerateColumns="True"
-          IsReadOnly="True" Margin="1450,50,45,24" />
-        <DataGrid x:Name="dataGrid" AutoGenerateColumns="True" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="662,50,0,0" Width="768" Height="810" VirtualizingStackPanel.IsVirtualizing="False"/>
+          IsReadOnly="True" Margin="1402,50,45,24" />
+        <DataGrid x:Name="dataGrid" AutoGenerateColumns="True" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="662,50,0,0" Width="709" Height="810" VirtualizingStackPanel.IsVirtualizing="False"/>
         <Button Content="Назад" HorizontalAlignment="Left" Margin="200,240,0,0" VerticalAlignment="Top" Width="65" Click="GoBack_Click"/>
         <Button Content="Вперед" HorizontalAlignment="Left" Margin="280,240,0,0" VerticalAlignment="Top" Width="64" Click="GoForward_Click"/>
-        <Label Content="Результат" HorizontalAlignment="Left" Height="26" Margin="1450,20,0,0" VerticalAlignment="Top" Width="105" AutomationProperties.IsColumnHeader="True" HorizontalContentAlignment="Center"/>
+        <Button Name="ClearButton" Content="Очистить" Click="ClearButton_Click" Height="30" Margin="10,830,970,24"/>
+        <Label Content="Результат" HorizontalAlignment="Left" Height="26" Margin="1426,20,0,0" VerticalAlignment="Top" Width="105" AutomationProperties.IsColumnHeader="True" HorizontalContentAlignment="Center"/>
         <Button Content="Автопроигрывание" HorizontalAlignment="Left" Margin="391,240,0,0" VerticalAlignment="Top" Width="122" Click="StartAutoPlay_Click"/>
         <Button Content="Остановка" HorizontalAlignment="Left" Margin="530,240,0,0" VerticalAlignment="Top" Width="100" Click="StopAutoPlay_Click"/>
     </Grid>
