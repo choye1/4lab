@@ -106,5 +106,10 @@ namespace Part3.Assist
             catch { }
 
         }
+
+        private void tbCurGroups_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
     }
 }
