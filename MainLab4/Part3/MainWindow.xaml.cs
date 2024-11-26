@@ -155,8 +155,9 @@ namespace Part3
                 RadixSort rs = new RadixSort();
                 return rs.Sort(inputData);
             }
-            catch
+            catch(Exception ex)
             {
+                
                 throw new Exception("Ошибка при сортировке");
             }
 
@@ -169,9 +170,9 @@ namespace Part3
                 BubbleSort bs = new BubbleSort();
                 return bs.Sort(inputData);
             }
-            catch
+            catch(Exception ex)
             {
-                throw new Exception("Ошибка при сортировке");
+               throw new Exception("Ошибка при сортировке");
             }
 
         }

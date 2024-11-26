@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -12,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Part3.Assist
 {
@@ -89,20 +91,47 @@ namespace Part3.Assist
 
         private void BackStep(object sender, RoutedEventArgs e)
         {
-            ParseStep(logReader.GetBack());
+            try
+            {
+                ParseStep(logReader.GetBack());
+            }
+            catch
+            {
+
+            }
         }
 
         private void NextStep(object sender, RoutedEventArgs e)
         {
-            ParseStep(logReader.GetNext());
+            try
+            {
+                ParseStep(logReader.GetNext());
+            }
+            catch
+            {
+
+            }
         }
 
-        private void StartStop(object sender, RoutedEventArgs e)
+        private DispatcherTimer timer;
+
+        bool isStarted = false;
+        private async void StartStop(object sender, RoutedEventArgs e)
         {
-            
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(10);
+           // timer.Tick += Timer_Tick;
+            timer.Start();
+        }
+
+        private async void Timer_Tick(RoutedEventArgs e)
+        {
+            double.TryParse(tbStopTime.Text, out double time);
+            isStarted = true;
+            NextStep("", e);
+            await Task.Delay(Convert.ToInt32(time * 100));
         }
 
 
-        
     }
 }
