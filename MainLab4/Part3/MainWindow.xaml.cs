@@ -164,17 +164,15 @@ namespace Part3
 
         private List<string> StartBubbleSort(List<string> inputData)
         {
-            BubbleSort bs = new BubbleSort();
-            return bs.Sort(inputData);
-            /* try
-             {
-                 BubbleSort bs = new BubbleSort();
-                 return bs.Sort(inputData);
-             }
-             catch
-             {
-                 throw new Exception("Ошибка при сортировке");
-             }*/
+            try
+            {
+                BubbleSort bs = new BubbleSort();
+                return bs.Sort(inputData);
+            }
+            catch
+            {
+                throw new Exception("Ошибка при сортировке");
+            }
 
         }
 
