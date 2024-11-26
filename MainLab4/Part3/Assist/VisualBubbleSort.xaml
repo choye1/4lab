@@ -6,13 +6,43 @@
         xmlns:local="clr-namespace:Part3.Assist"
         mc:Ignorable="d"
         Title="VisualSort" Height="450" Width="800">
-    <Grid>
-        <TextBox x:Name="tbStartArray" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,19,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="658"/>
-        <TextBox x:Name="tbCurrentArray" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,58,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="658"/>
-        <TextBox x:Name="tbFirst" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,100,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="316"/>
-        <TextBox x:Name="tbSecond" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="474,100,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="316"/>
-        <TextBox x:Name="tbFlip" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,144,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="658"/>
-        <TextBox x:Name="tbStopTime" HorizontalAlignment="Left" Height="26" Margin="400,378,0,0" VerticalContentAlignment="Center" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="168"/>
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Background" Value="#D3E4FF"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="5" ShadowDepth="2" Color="#888888"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="Rectangle" x:Key="SortingRectangleStyle">
+            <!-- Основные свойства -->
+            <Setter Property="Fill" Value="LightBlue" />
+            <Setter Property="Stroke" Value="Black" />
+            <Setter Property="StrokeThickness" Value="1" />
+        </Style>
+    </Window.Resources>
+    <Grid Background="AliceBlue">
+        <TextBox x:Name="tbStartArray" BorderBrush="#D3E4FF" BorderThickness="2" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,19,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="658"/>
+        <TextBox x:Name="tbCurrentArray" BorderBrush="#D3E4FF" BorderThickness="2" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,58,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="658"/>
+        <TextBox x:Name="tbFirst" BorderBrush="#D3E4FF" BorderThickness="2" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,100,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="316"/>
+        <TextBox x:Name="tbSecond" BorderBrush="#D3E4FF" BorderThickness="2" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="474,100,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="316"/>
+        <TextBox x:Name="tbFlip" BorderBrush="#D3E4FF" BorderThickness="2" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,144,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="658"/>
+        <TextBox x:Name="tbStopTime" BorderBrush="#D3E4FF" BorderThickness="2" HorizontalAlignment="Left" Height="26" Margin="400,378,0,0" VerticalContentAlignment="Center" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="168"/>
 
         <Button Content="Старт / Стоп" HorizontalAlignment="Center" Margin="0,292,0,0" VerticalAlignment="Top" Height="35" Width="168" Click="StartStop"/>
         <Button Content="Вперед" HorizontalAlignment="Left" Margin="499,292,0,0" VerticalAlignment="Top" Height="35" Width="168" Click ="NextStep"/>
@@ -24,7 +54,7 @@
         <Label Content="Что сравниваем:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="10,100,0,0" VerticalAlignment="Top" Width="122"/>
         <Label Content="Массив сейчас:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="10,58,0,0" VerticalAlignment="Top" Width="122"/>
         <Label Content="Исходный массив:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="10,19,0,0" VerticalAlignment="Top" Width="122"/>
-        <TextBox x:Name="tbFinalAr" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,188,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="658"/>
+        <TextBox x:Name="tbFinalAr" BorderBrush="#D3E4FF" BorderThickness="2" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,188,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="658"/>
         <Label Content="Итоговый массив:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="10,188,0,0" VerticalAlignment="Top" Width="122"/>
 
     </Grid>

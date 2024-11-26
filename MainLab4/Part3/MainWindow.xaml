@@ -6,7 +6,37 @@
         xmlns:local="clr-namespace:Part3"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Background" Value="#D3E4FF"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="5" ShadowDepth="2" Color="#888888"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="Rectangle" x:Key="SortingRectangleStyle">
+            <!-- Основные свойства -->
+            <Setter Property="Fill" Value="LightBlue" />
+            <Setter Property="Stroke" Value="Black" />
+            <Setter Property="StrokeThickness" Value="1" />
+        </Style>
+    </Window.Resources>
+    <Grid Background="AliceBlue">
         <Label Content="Файл с текстом для сортировки (path):" HorizontalAlignment="Left" Margin="66,30,0,0" VerticalAlignment="Top"/>
         <Button x:Name="Review" Content="Обзор.." HorizontalAlignment="Left" Margin="676,30,0,0" VerticalAlignment="Top" Height="26" Width="84" Click="BtReviewClick" />
         <TextBox x:Name="tbSelectedFile" HorizontalAlignment="Left" Height="26" Margin="306,30,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="365"/>
@@ -17,7 +47,7 @@
             <ComboBoxItem Content="Radix-Sort" />
         </ComboBox>
         <Button x:Name="Start" Content="Сортировать" HorizontalAlignment="Left" Margin="676,70,0,0" VerticalAlignment="Top" Height="26" Width="84" Click="BtStartClick"/>
-        <TextBox x:Name="tbOut" HorizontalAlignment="Left" Height="244" Margin="97,154,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="663"/>
+        <TextBox x:Name="tbOut" Padding="15" FontSize="20" HorizontalAlignment="Left" Height="244" Margin="97,154,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="663"/>
 
     </Grid>
 </Window>

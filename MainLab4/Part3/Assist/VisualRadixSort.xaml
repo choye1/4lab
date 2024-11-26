@@ -2,7 +2,37 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Radix Sort Visualizer" Height="450" Width="800">
-    <Grid>
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Background" Value="#D3E4FF"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="5" ShadowDepth="2" Color="#888888"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="Rectangle" x:Key="SortingRectangleStyle">
+            <!-- Основные свойства -->
+            <Setter Property="Fill" Value="LightBlue" />
+            <Setter Property="Stroke" Value="Black" />
+            <Setter Property="StrokeThickness" Value="1" />
+        </Style>
+    </Window.Resources>
+    <Grid Background="AliceBlue">
         <TextBox x:Name="tbStartArray" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="188,19,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="602"/>
         <Label Content="Исходный массив:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="10,19,0,0" VerticalAlignment="Top" Width="173"/>
         <TextBox x:Name="tbFinalAr" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,380,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="658"/>
@@ -11,9 +41,9 @@
         <Label Content="Максимальная длина слова:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="10,55,0,0" VerticalAlignment="Top" Width="173"/>
         <TextBox x:Name="tbCurLet" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="591,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="199"/>
         <Label Content="Группируем слова по букве №" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="405,55,0,0" VerticalAlignment="Top" Width="181"/>
-        <TextBox x:Name="tbCurGroups" HorizontalAlignment="Left" Height="155" VerticalContentAlignment="Center" Margin="188,96,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="212"/>
+        <TextBox x:Name="tbCurGroups" Padding="15" HorizontalAlignment="Left" Height="155" VerticalContentAlignment="Center" Margin="188,96,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="212"/>
         <Label Content="Получившиеся группы:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="10,154,0,0" VerticalAlignment="Top" Width="173"/>
-        <Button Content="Вперёд" HorizontalAlignment="Left" Margin="439,132,0,0" VerticalAlignment="Top" Click="Next"/>
-        <Button Content="Назад" HorizontalAlignment="Left" Margin="651,132,0,0" VerticalAlignment="Top" Click="Back"/>
+        <Button Content="Назад" HorizontalAlignment="Left" Margin="477,132,0,0" VerticalAlignment="Top" Click="Back" Height="42" Width="81"/>
+        <Button Content="Вперёд" HorizontalAlignment="Left" Margin="591,132,0,0" VerticalAlignment="Top" Click="Next" Height="42" Width="81"/>
     </Grid>
 </Window>

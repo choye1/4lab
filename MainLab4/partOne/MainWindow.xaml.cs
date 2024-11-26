@@ -38,13 +38,21 @@ namespace partOne
         private async void StartSorting_Click(object sender, RoutedEventArgs e)
         {
             LogTextBox.Clear();
-            delay = int.Parse(Delay.Text) * 1000;
+            try
+            {
+                delay = int.Parse(Delay.Text) * 1000;
+            }
+            catch (Exception) 
+            {
+                MessageBox.Show("Пожалуйста, введите задержку.");
+            }
 
             string input = AddList.Text; // Получаем текст из TextBox
             list.Clear(); // Очищаем список перед добавлением новых значений
 
             try
             {
+   
                 // Разделяем строку по запятой и пробелам, преобразуем в числа
                 list.AddRange(input.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
                                    .Select(int.Parse));
@@ -53,8 +61,10 @@ namespace partOne
             {
                 MessageBox.Show("Пожалуйста, введите только числа, разделённые запятыми или пробелами.");
             }
+            
 
-            File.WriteAllText(filePath, string.Empty);
+
+                File.WriteAllText(filePath, string.Empty);
             CreateRectangles(list);
 
             
