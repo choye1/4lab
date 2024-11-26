@@ -1,19 +1,21 @@
-inAr olen bobr capibara copibara aboba 
-maxLen 8
+inAr iit Aleksej Salamatin VyqSyHrv 
+maxLen 9
+curLet 9
+curGroups 1:iit,Aleksej,VyqSyHrv, 2:Salamatin, 
 curLet 8
-curGroups 1:olen,bobr,aboba, 2:capibara,copibara, 
+curGroups 1:iit,Aleksej, 2:Salamatin, 3:VyqSyHrv, 
 curLet 7
-curGroups 1:olen,bobr,aboba, 2:capibara,copibara, 
+curGroups 1:iit, 2:Aleksej, 3:VyqSyHrv, 4:Salamatin, 
 curLet 6
-curGroups 1:olen,bobr,aboba, 2:capibara,copibara, 
+curGroups 1:iit, 2:VyqSyHrv, 3:Salamatin, 4:Aleksej, 
 curLet 5
-curGroups 1:olen,bobr, 2:aboba, 3:capibara,copibara, 
+curGroups 1:iit, 2:Salamatin, 3:Aleksej, 4:VyqSyHrv, 
 curLet 4
-curGroups 1:aboba, 2:capibara,copibara, 3:olen, 4:bobr, 
+curGroups 1:iit, 2:VyqSyHrv, 3:Salamatin, 4:Aleksej, 
 curLet 3
-curGroups 1:bobr, 2:olen, 3:aboba, 4:capibara,copibara, 
+curGroups 1:Aleksej, 2:Salamatin, 3:VyqSyHrv, 4:iit, 
 curLet 2
-curGroups 1:capibara, 2:aboba, 3:olen, 4:bobr,copibara, 
+curGroups 1:Salamatin, 2:iit, 3:Aleksej, 4:VyqSyHrv, 
 curLet 1
-curGroups 1:aboba, 2:bobr, 3:capibara,copibara, 4:olen, 
-endAr aboba bobr capibara copibara olen 
+curGroups 1:Aleksej, 2:Salamatin, 3:VyqSyHrv, 4:iit, 
+endAr Aleksej Salamatin VyqSyHrv iit 

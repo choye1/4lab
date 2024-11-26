@@ -51,27 +51,39 @@ namespace partOne
             }
             catch (FormatException)
             {
-                MessageBox.Show("Пожалуйста, введите только числа, разделённые запятыми.");
+                MessageBox.Show("Пожалуйста, введите только числа, разделённые запятыми или пробелами.");
             }
 
             File.WriteAllText(filePath, string.Empty);
             CreateRectangles(list);
 
-            if (BubbleSortRadioButton.IsChecked == true)
+            
+
+            string selectedSortMethod = ((ComboBoxItem)SortMethodComboBox.SelectedItem)?.Content.ToString();
+
+            if (selectedSortMethod == null)
             {
-                await MergeSort(list,0,list.Count-1);
+                MessageBox.Show("Выберите метод сортировки.");
+                return;
             }
-            else if (SelectionSortRadioButton.IsChecked == true)
+
+            switch (selectedSortMethod)
             {
-                await SelectionSort(list);
-            }
-            else if (HeapSortRadioButton.IsChecked == true)
-            {
-                await ShellSort(list);
-            }
-            else if (QuickSortRadioButton.IsChecked == true)
-            {
-                await QuickSort(list, 0, list.Count - 1);
+                case "Merge Sort":
+                    await MergeSort(list, 0, list.Count - 1);
+                    break;
+                case "Selection Sort":
+                    await SelectionSort(list);
+                    break;
+                case "Shell Sort":
+                    await ShellSort(list);
+                    break;
+                case "Quick Sort":
+                    await QuickSort(list, 0, list.Count - 1);
+                    break;
+                default:
+                    MessageBox.Show("Неизвестный метод сортировки.");
+                    break;
             }
         }
 
@@ -136,6 +148,9 @@ namespace partOne
 
         public async Task SelectionSort(List<int> list)
         {
+            logger.Log("Сортировка выбором – это алгоритм, суть которого заключается в постоянном сравнении элементов неотсортированой части. Наименьший элемент в неотсортированой части меняется местами с первым ее элементом и сразу становится отсортированой частью.");
+            LoadLogsToTextBox();
+
             int n = list.Count;
 
             logger.Log("Начало сортировки выбором:");
@@ -148,10 +163,10 @@ namespace partOne
             {
                 int minIndex = i;
 
-                rectangles[i].Fill = compareColor; // Выделяем текущий минимальный элемент
+                rectangles[i].Fill = compareColor; 
                 Dispatcher.Invoke(() => UpdateRectangles(list));
 
-                // Находим минимальный элемент в неотсортированной части массива
+                
                 for (int j = i + 1; j < n; j++)
                 {
                     rectangles[j].Fill = compareColor;
@@ -166,13 +181,13 @@ namespace partOne
                     await Task.Delay(delay);
                     Dispatcher.Invoke(() =>
                     {
-                        rectangles[j].Fill = defaultColor; // Сбрасываем выделение после сравнения
+                        rectangles[j].Fill = defaultColor; 
 
                         UpdateRectangles(list);
                     });
                 }
 
-                // Логируем текущее состояние массива
+              
                 logger.Log($"Итерация {i + 1}: Текущий массив: {string.Join(", ", list)}");
                 LoadLogsToTextBox();
 
@@ -223,7 +238,6 @@ namespace partOne
                 });
             }
 
-            // Логируем окончательное состояние массива
             logger.Log($"Сортировка завершена: {string.Join(", ", list)}");
             LoadLogsToTextBox();
 
@@ -231,11 +245,19 @@ namespace partOne
 
         private async Task MergeSort(List<int> arr, int left, int right)
         {
+            logger.Log("Сортировка слиянием – это алгоритм который разделяет массив данных на две равные части, потом вызывает сам себя для каждой из этих частей и так до тех пор, пока массивы не станут единичными. Дальше эти подмассивы сравниваются со своей «половинкой» и в упорядоченом виде объединяются в новый отсортированый массив.");
+            LoadLogsToTextBox();
+
+            logger.Log("Начало сортировки слияннием:");
+            LoadLogsToTextBox();
+
+            logger.Log($"Исходный массив: {string.Join(", ", list)}");
+            LoadLogsToTextBox();
+
             if (left < right)
             {
                 int mid = (left + right) / 2;
 
-                // Логируем разделение
                 logger.Log($"Разделяем массив: [{left}:{mid}] и [{mid + 1}:{right}]");
                 LoadLogsToTextBox();
 
@@ -244,7 +266,6 @@ namespace partOne
 
                 await Merge(arr, left, mid, right);
 
-                // Сбрасываем цвет столбцов в текущем диапазоне
                 for (int i = left; i <= right; i++)
                 {
                     rectangles[i].Fill = defaultColor;
@@ -281,10 +302,9 @@ namespace partOne
 
             while (iLeft < n1 && iRight < n2)
             {
-                // Подсвечиваем текущие сравниваемые элементы
-                rectangles[k].Fill = compareColor; // Текущая позиция в основном массиве
-                rectangles[left + iLeft].Fill = compareColor; // Элемент из левой части
-                rectangles[mid + 1 + iRight].Fill = compareColor; // Элемент из правой части
+                rectangles[k].Fill = compareColor; 
+                rectangles[left + iLeft].Fill = compareColor;
+                rectangles[mid + 1 + iRight].Fill = compareColor;
                 Dispatcher.Invoke(() => UpdateRectangles(arr));
 
                 await Task.Delay(delay);
@@ -309,7 +329,6 @@ namespace partOne
 
                 }
 
-                // Подсвечиваем замену красным цветом
                 rectangles[k].Fill = swapColor;
                 Dispatcher.Invoke(() => UpdateRectangles(arr));
                 await Task.Delay(delay);
@@ -335,7 +354,6 @@ namespace partOne
             {
                 arr[k] = leftArray[iLeft];
 
-                // Подсвечиваем замену красным
                 rectangles[k].Fill = swapColor;
                 rectangles[left + iLeft].Fill = compareColor;
                 Dispatcher.Invoke(() => UpdateRectangles(arr));
@@ -347,7 +365,6 @@ namespace partOne
                 logger.Log($"Массив после замены: {string.Join(", ", arr)}");
                 LoadLogsToTextBox();
 
-                // Сбрасываем цвет
                 rectangles[k].Fill = defaultColor;
                 rectangles[left + iLeft].Fill = defaultColor;
                 Dispatcher.Invoke(() => UpdateRectangles(arr));
@@ -360,7 +377,6 @@ namespace partOne
             {
                 arr[k] = rightArray[iRight];
 
-                // Подсвечиваем замену красным
                 rectangles[k].Fill = swapColor;
                 rectangles[mid + 1 + iRight].Fill = compareColor;
                 Dispatcher.Invoke(() => UpdateRectangles(arr));
@@ -373,7 +389,6 @@ namespace partOne
                 LoadLogsToTextBox();
 
 
-                // Сбрасываем цвет
                 rectangles[k].Fill = defaultColor;
                 rectangles[mid + 1 + iRight].Fill = defaultColor;
                 Dispatcher.Invoke(() => UpdateRectangles(arr));
@@ -387,8 +402,11 @@ namespace partOne
 
         private async Task ShellSort(List<int> arr)
         {
+            logger.Log("Сортировка Шелла – это модифицированая сортировка вставками. Ее суть в том, что массив данных разбивается на так называемые Gap’ы (зазоры). Каждая итерация сортировки – это сравнение элементов массива на расстоянии текущего зазора друг от друга, а затем упорядочивание этих элементов. С каждым проходом по массиву зазор уменьшается вдвое и эти действия повторяются до окончания сортировки.");
+            LoadLogsToTextBox();
+
             int n = arr.Count;
-            logger.Log("Начало сортировки. Исходный список: " + string.Join(", ", arr));
+            logger.Log("Начало сортировки Шелла. Исходный список: " + string.Join(", ", arr));
             LoadLogsToTextBox();
 
             for (int gap = n / 2; gap > 0; gap /= 2)
@@ -448,6 +466,14 @@ namespace partOne
 
         private async Task QuickSort(List<int> arr, int left, int right)
         {
+            logger.Log("Быстрая сортировка - это алгоритм \"разделяй и властвуй\", который рекурсивно сортирует массив, разделяя его на части относительно опорного элемента и объединяя отсортированные части.");
+            LoadLogsToTextBox();
+
+            logger.Log("Начало быстрой сортировки:");
+            LoadLogsToTextBox();
+
+            logger.Log($"Исходный массив: {string.Join(", ", list)}");
+            LoadLogsToTextBox();
             if (left < right)
             {
 
@@ -471,15 +497,15 @@ namespace partOne
             logger.Log($"Выбран опорный элемент: {pivot} (индекс {right}).");
             LoadLogsToTextBox();
 
-            rectangles[right].Fill = compareColor; // Выделяем опорный элемент
-            int i = (left - 1); // индекс меньшего элемента
+            rectangles[right].Fill = compareColor; 
+            int i = (left - 1); 
 
             for (int j = left; j < right; j++)
             {
                 logger.Log($"Сравниваем array[{j}] = {array[j]} с pivot = {pivot}.");
                 LoadLogsToTextBox();
 
-                rectangles[j].Fill = compareColor;  // выделяем текущий элемент
+                rectangles[j].Fill = compareColor; 
                 Dispatcher.Invoke(() => UpdateRectangles(array));
 
                 if (array[j] < pivot)
@@ -497,8 +523,8 @@ namespace partOne
                     Dispatcher.Invoke(() =>
                     {
                         UpdateRectangles(array);
-                        rectangles[i].Fill = defaultColor;  // Сбрасываем выделение
-                        rectangles[j].Fill = defaultColor;  // Сбрасываем выделение
+                        rectangles[i].Fill = defaultColor;
+                        rectangles[j].Fill = defaultColor;
                         UpdateRectangles(array);
                     });
                 }
@@ -507,7 +533,7 @@ namespace partOne
                     await Task.Delay(delay);
                     Dispatcher.Invoke(() =>
                     {
-                        rectangles[j].Fill = defaultColor;  // Сбрасываем выделение
+                        rectangles[j].Fill = defaultColor; 
 
                         UpdateRectangles(array);
                     });
@@ -515,7 +541,7 @@ namespace partOne
             }
 
             (array[i + 1], array[right]) = (array[right], array[i + 1]);
-            rectangles[right].Fill = defaultColor;  // Сбрасываем выделение с опорного
+            rectangles[right].Fill = defaultColor;  
             logger.Log($"Обмен опорного элемента: array[{i + 1}] = {array[i + 1]}, array[{right}] = {array[right]} -> {string.Join(", ", array)}");
             LoadLogsToTextBox();
 
