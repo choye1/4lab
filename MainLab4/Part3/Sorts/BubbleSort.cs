@@ -24,6 +24,7 @@ namespace Part2.Sorts
                 for (int j = 0; j < inputdata.Length - i - 1; j++)
                 {
 
+
                     if (inputdata[j] != inputdata[j + 1] && CompareWords(inputdata[j], inputdata[j + 1]))
                     {
                         logger.WriteLog("cmpWr", inputdata[j] + " " + inputdata[j + 1] + " Да " + GetString(inputdata).ToString());
@@ -55,9 +56,13 @@ namespace Part2.Sorts
 
         private bool CompareWords(string first, string second) //0 - word1 > word2, 1 - word2 > word1 
         {
+
+
             if (first.Length <= 1 && (byte)first[0] < (byte)second[0]) return false;
             else if (second.Length <= 1 && (byte)second[0] < (byte)first[0]) return true;
             else if (first.Length <= 1 && second.Length <= 1) return false;
+            else if (first.Length <= 1 && second.Length >= 1) return false;
+            else if (first.Length >= 1 && second.Length <= 1) return true;
             if (first.ToArray()[0] == second.ToArray()[0])
             {
                 return CompareWords(first.Substring(1, first.Length - 1), second.Substring(1, second.Length - 1));
@@ -66,6 +71,7 @@ namespace Part2.Sorts
             {
                 return ((byte)first[0]) > ((byte)second[0]);
             }
+
 
         }
 
