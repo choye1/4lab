@@ -42,7 +42,7 @@
         <TextBox x:Name="tbFirst" IsReadOnly="True" BorderBrush="#D3E4FF" BorderThickness="2" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,100,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="316"/>
         <TextBox x:Name="tbSecond" IsReadOnly="True" BorderBrush="#D3E4FF" BorderThickness="2" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="474,100,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="316"/>
         <TextBox x:Name="tbFlip" IsReadOnly="True" BorderBrush="#D3E4FF" BorderThickness="2" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="132,144,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="658"/>
-        <TextBox x:Name="tbStopTime" IsReadOnly="True" BorderBrush="#D3E4FF" BorderThickness="2" HorizontalAlignment="Left" Height="26" Margin="400,378,0,0" VerticalContentAlignment="Center" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="168"/>
+        <TextBox x:Name="tbStopTime" BorderBrush="#D3E4FF" BorderThickness="2" HorizontalAlignment="Left" Height="26" Margin="400,378,0,0" VerticalContentAlignment="Center" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="168"/>
 
         <Button Content="Старт / Стоп" HorizontalAlignment="Center" Margin="0,292,0,0" VerticalAlignment="Top" Height="35" Width="168" Click="StartStop"/>
         <Button Content="Вперед" HorizontalAlignment="Left" Margin="499,292,0,0" VerticalAlignment="Top" Height="35" Width="168" Click ="NextStep"/>

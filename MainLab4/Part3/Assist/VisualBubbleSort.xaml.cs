@@ -22,6 +22,8 @@ namespace Part3.Assist
     /// </summary>
     public partial class VisualBubbleSort : Window
     {
+        private CancellationTokenSource cancellationTokenSource;
+
         LogReader logReader = new LogReader();
         public VisualBubbleSort()
         {
@@ -109,7 +111,6 @@ namespace Part3.Assist
             }
             catch
             {
-
             }
         }
 
@@ -118,18 +119,57 @@ namespace Part3.Assist
         bool isStarted = false;
         private async void StartStop(object sender, RoutedEventArgs e)
         {
-            timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(10);
-           // timer.Tick += Timer_Tick;
-            timer.Start();
+            if (isStarted)
+            {
+                Stop();
+            }
+            else
+            {
+                Start(e);
+            }
         }
 
-        private async void Timer_Tick(RoutedEventArgs e)
+        private async void Start(RoutedEventArgs e)
         {
-            double.TryParse(tbStopTime.Text, out double time);
+            cancellationTokenSource = new CancellationTokenSource();
+            try
+            {
+                await Timer_Tick(cancellationTokenSource.Token, e);
+            }
+            catch (OperationCanceledException)
+            {
+
+            }
+        }
+
+        private void Stop()
+        {
+            if (cancellationTokenSource != null)
+            {
+                cancellationTokenSource.Cancel();
+                isStarted = false;
+            }
+        }
+
+
+        private async Task Timer_Tick(CancellationToken token, RoutedEventArgs e)
+        {
             isStarted = true;
-            NextStep("", e);
-            await Task.Delay(Convert.ToInt32(time * 100));
+
+            while (isStarted)
+            {
+                try
+                {
+                    double.TryParse(tbStopTime.Text, out double time);
+                    ParseStep(logReader.GetNext());
+                    await Task.Delay(Convert.ToInt32(time * 1000));
+                }
+                catch
+                {
+                    cancellationTokenSource.Cancel();
+                    isStarted = false;
+                }
+            }
         }
 
 
