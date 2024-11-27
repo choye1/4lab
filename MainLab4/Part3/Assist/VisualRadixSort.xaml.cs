@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,6 +22,7 @@ namespace Part3.Assist
     public partial class VisualRadixSort : Window
     {
         LogReader lR = new LogReader();
+        private CancellationTokenSource cancellationTokenSource;
 
         public VisualRadixSort()
         {
@@ -111,5 +114,62 @@ namespace Part3.Assist
         {
 
         }
+
+
+        bool isStarted = false;
+        private void StartStop(object sender, RoutedEventArgs e)
+        {
+            if (isStarted)
+            {
+                Stop();
+            }
+            else
+            {
+                Start(e);
+            }
+        }
+        private async void Start(RoutedEventArgs e)
+        {
+            cancellationTokenSource = new CancellationTokenSource();
+            try
+            {
+                await Timer_Tick(cancellationTokenSource.Token, e);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
+        private void Stop()
+        {
+            if (cancellationTokenSource != null)
+            {
+                cancellationTokenSource.Cancel();
+                isStarted = false;
+            }
+        }
+
+
+        private async Task Timer_Tick(CancellationToken token, RoutedEventArgs e)
+        {
+            isStarted = true;
+
+            while (isStarted)
+            {
+                try
+                {
+                    double.TryParse(tbStopTime.Text, out double time);
+                    ParseStep(lR.GetNext());
+                    ParseStep(lR.GetNext());
+                    await Task.Delay(Convert.ToInt32(time * 1000));
+                }
+                catch
+                {
+                    cancellationTokenSource.Cancel();
+                    isStarted = false;
+                }
+            }
+        }
+
     }
 }

@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Part3.Assist.VisualRadixSort"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Radix Sort Visualizer" Height="450" Width="800">
+        Title="Radix Sort Visualizer" Height="475" Width="833">
     <Window.Resources>
         <Style TargetType="Button">
             <Setter Property="Margin" Value="5"/>
@@ -32,18 +32,21 @@
             <Setter Property="StrokeThickness" Value="1" />
         </Style>
     </Window.Resources>
-    <Grid Background="AliceBlue">
+    <Grid Background="AliceBlue" Margin="0,0,0,-16">
         <TextBox x:Name="tbStartArray" IsReadOnly="True" HorizontalAlignment="Left" Height="130" VerticalContentAlignment="Center" Margin="15,39,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="474"/>
         <Label Content="Исходный массив:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="-10,10,0,0" VerticalAlignment="Top" Width="172"/>
-        <TextBox x:Name="tbFinalAr" IsReadOnly="True" HorizontalAlignment="Left" Height="166" VerticalContentAlignment="Center" Margin="15,214,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="474"/>
+        <TextBox x:Name="tbFinalAr" IsReadOnly="True" HorizontalAlignment="Left" Height="194" VerticalContentAlignment="Center" Margin="15,214,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="474"/>
         <Label Content="Итоговый массив:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="15,184,0,0" VerticalAlignment="Top" Width="122"/>
-        <TextBox x:Name="tbMaxLen" IsReadOnly="True" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="721,229,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.554,2.581"/>
-        <Label Content="Максимальная длина слова:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="526,229,0,0" VerticalAlignment="Top" Width="174"/>
-        <TextBox x:Name="tbCurLet" IsReadOnly="True" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="721,174,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.495,2.135"/>
-        <Label Content="Группируем слова по букве №" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="526,174,0,0" VerticalAlignment="Top" Width="182"/>
-        <TextBox x:Name="tbCurGroups" IsReadOnly="True" Padding="15" HorizontalAlignment="Left" Height="132" VerticalContentAlignment="Center" Margin="530,37,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="212" TextChanged="tbCurGroups_TextChanged"/>
-        <Label Content="Получившиеся группы:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="545,10,0,0" VerticalAlignment="Top" Width="173"/>
-        <Button Content="Назад" HorizontalAlignment="Left" Margin="545,301,0,0" VerticalAlignment="Top" Click="Back" Height="42" Width="82"/>
-        <Button Content="Вперёд" HorizontalAlignment="Left" Margin="660,301,0,0" VerticalAlignment="Top" Click="Next" Height="42" Width="82"/>
+        <TextBox x:Name="tbMaxLen" IsReadOnly="True" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="721,293,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.554,2.581"/>
+        <Label Content="Максимальная длина слова:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="526,293,0,0" VerticalAlignment="Top" Width="174"/>
+        <TextBox x:Name="tbCurLet" IsReadOnly="True" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="721,252,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.495,2.135"/>
+        <Label Content="Группируем слова по букве №" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="526,252,0,0" VerticalAlignment="Top" Width="182"/>
+        <TextBox x:Name="tbCurGroups" IsReadOnly="True" Padding="15" HorizontalAlignment="Left" Height="196" VerticalContentAlignment="Center" Margin="530,37,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="252" TextChanged="tbCurGroups_TextChanged"/>
+        <Label Content="Получившиеся группы:" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="558,10,0,0" VerticalAlignment="Top" Width="172"/>
+        <Button Content="Назад" HorizontalAlignment="Left" Margin="504,333,0,0" VerticalAlignment="Top" Click="Back" Height="42" Width="82"/>
+        <Button Content="Вперёд" HorizontalAlignment="Left" Margin="700,333,0,0" VerticalAlignment="Top" Click="Next" Height="42" Width="82"/>
+        <Button Content="Старт/стоп" HorizontalAlignment="Left" Margin="603,333,0,0" VerticalAlignment="Top"  Height="42" Width="82" Click="StartStop"/>
+        <TextBox x:Name="tbStopTime" HorizontalAlignment="Left" Height="30" VerticalContentAlignment="Center" Margin="721,393,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.554,2.581"/>
+        <Label x:Name="lbl" Content="Скорость воспроизведения(с):" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="30" Margin="526,393,0,0" VerticalAlignment="Top" Width="182"/>
     </Grid>
 </Window>

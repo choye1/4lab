@@ -114,10 +114,9 @@ namespace Part3.Assist
             }
         }
 
-        private DispatcherTimer timer;
 
         bool isStarted = false;
-        private async void StartStop(object sender, RoutedEventArgs e)
+        private  void StartStop(object sender, RoutedEventArgs e)
         {
             if (isStarted)
             {
