@@ -8,4 +8,10 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Part2\Part2.csproj" />
+    <ProjectReference Include="..\Part3\Part3.csproj" />
+    <ProjectReference Include="..\partOne\partOne.csproj" />
+  </ItemGroup>
+
 </Project>
