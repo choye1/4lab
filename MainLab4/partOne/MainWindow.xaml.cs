@@ -155,17 +155,12 @@ namespace partOne
             }
         }
 
-
         public async Task SelectionSort(List<int> list)
         {
-            logger.Log("Сортировка выбором – это алгоритм, суть которого заключается в постоянном сравнении элементов неотсортированой части. Наименьший элемент в неотсортированой части меняется местами с первым ее элементом и сразу становится отсортированой частью.");
-            LoadLogsToTextBox();
-
             int n = list.Count;
 
             logger.Log("Начало сортировки выбором:");
             LoadLogsToTextBox();
-
             logger.Log($"Исходный массив: {string.Join(", ", list)}");
             LoadLogsToTextBox();
 
@@ -173,102 +168,90 @@ namespace partOne
             {
                 int minIndex = i;
 
-                rectangles[i].Fill = compareColor; 
-                Dispatcher.Invoke(() => UpdateRectangles(list));
+                // Лог начала итерации
+                logger.Log($"Итерация {i + 1}: ищем минимальный элемент от позиции {i} до {n - 1}.");
+                LoadLogsToTextBox();
 
-                
                 for (int j = i + 1; j < n; j++)
                 {
+                    // Подсветка сравниваемых элементов
                     rectangles[j].Fill = compareColor;
+                    rectangles[minIndex].Fill = compareColor;
                     Dispatcher.Invoke(() => UpdateRectangles(list));
+                    await Task.Delay(delay);
+
+                    // Лог сравнения
+                    logger.Log($"Сравниваем: текущий минимум {list[minIndex]} (индекс {minIndex}) и {list[j]} (индекс {j}).");
+                    LoadLogsToTextBox();
 
                     if (list[j] < list[minIndex])
                     {
-                        rectangles[minIndex].Fill = defaultColor;
-                        minIndex = j;
-                        rectangles[minIndex].Fill = compareColor;
-                    }
-                    await Task.Delay(delay);
-                    Dispatcher.Invoke(() =>
-                    {
-                        rectangles[j].Fill = defaultColor; 
-
-                        UpdateRectangles(list);
-                    });
-                }
-
-              
-                logger.Log($"Итерация {i + 1}: Текущий массив: {string.Join(", ", list)}");
-                LoadLogsToTextBox();
-
-                logger.Log($"Найден минимальный элемент: {list[minIndex]} на позиции {minIndex}");
-                LoadLogsToTextBox();
-                if (minIndex != i)
-                {
-                    rectangles[i].Fill = swapColor;
-                    rectangles[minIndex].Fill = swapColor;
-
-                    await Task.Delay(delay);
-                    Dispatcher.Invoke(() =>
-                    {
-                        
-
-                        (list[i], list[minIndex]) = (list[minIndex], list[i]);
-
-                        UpdateRectangles(list);
+                        // Лог обновления минимального элемента
+                        logger.Log($"Найден новый минимальный элемент: {list[j]} (индекс {j}).");
                         LoadLogsToTextBox();
 
-                    });
+                        rectangles[minIndex].Fill = defaultColor; // Сброс цвета старого minIndex
+                        minIndex = j;
+                        rectangles[minIndex].Fill = compareColor; // Новый минимальный элемент
+                    }
 
-                    rectangles[i].Fill = defaultColor;
-                    rectangles[minIndex].Fill = defaultColor;
+                    // Сброс цвета сравниваемого элемента
+                    rectangles[j].Fill = defaultColor;
+                    Dispatcher.Invoke(() => UpdateRectangles(list));
+                }
 
-                    logger.Log($"Поменяли местами элементы на позициях {i} и {minIndex}");
+                if (minIndex != i)
+                {
+                    // Лог обмена
+                    logger.Log($"Меняем местами: {list[i]} (индекс {i}) и {list[minIndex]} (индекс {minIndex}).");
                     LoadLogsToTextBox();
 
+                    // Подсветка элементов для обмена
+                    rectangles[i].Fill = swapColor;
+                    rectangles[minIndex].Fill = swapColor;
+                    Dispatcher.Invoke(() => UpdateRectangles(list));
+                    await Task.Delay(delay);
+
+                    // Обмен элементов
+                    (list[i], list[minIndex]) = (list[minIndex], list[i]);
+                    Dispatcher.Invoke(() => UpdateRectangles(list));
+
+                    // Сброс цвета после обмена
+                    rectangles[i].Fill = defaultColor;
+                    rectangles[minIndex].Fill = defaultColor;
                 }
                 else
                 {
-                    logger.Log($"Элемент на позиции {i} уже на своем месте");
+                    // Лог отсутствия обмена
+                    logger.Log($"Элемент на позиции {i} уже минимальный, обмен не требуется.");
                     LoadLogsToTextBox();
-                } 
-                
+                }
 
+                // Лог состояния массива после итерации
                 logger.Log($"Массив после итерации {i + 1}: {string.Join(", ", list)}");
+                LoadLogsToTextBox();
 
+                // Сброс цвета для текущего элемента
+                rectangles[i].Fill = defaultColor;
+                Dispatcher.Invoke(() => UpdateRectangles(list));
                 await Task.Delay(delay);
-                Dispatcher.Invoke(() =>
-                {
-                    rectangles[i].Fill = defaultColor;
-
-                    UpdateRectangles(list);
-                    LoadLogsToTextBox();
-
-
-                });
             }
 
+            // Лог завершения сортировки
             logger.Log($"Сортировка завершена: {string.Join(", ", list)}");
             LoadLogsToTextBox();
-
         }
 
         private async Task MergeSort(List<int> arr, int left, int right)
         {
-            logger.Log("Сортировка слиянием – это алгоритм который разделяет массив данных на две равные части, потом вызывает сам себя для каждой из этих частей и так до тех пор, пока массивы не станут единичными. Дальше эти подмассивы сравниваются со своей «половинкой» и в упорядоченом виде объединяются в новый отсортированый массив.");
-            LoadLogsToTextBox();
-
-            logger.Log("Начало сортировки слияннием:");
-            LoadLogsToTextBox();
-
-            logger.Log($"Исходный массив: {string.Join(", ", list)}");
+            logger.Log($"Начало сортировки слиянием для диапазона [{left}, {right}].");
             LoadLogsToTextBox();
 
             if (left < right)
             {
                 int mid = (left + right) / 2;
 
-                logger.Log($"Разделяем массив: [{left}:{mid}] и [{mid + 1}:{right}]");
+                logger.Log($"Разделяем массив на [{left}:{mid}] и [{mid + 1}:{right}].");
                 LoadLogsToTextBox();
 
                 await MergeSort(arr, left, mid);
@@ -276,6 +259,7 @@ namespace partOne
 
                 await Merge(arr, left, mid, right);
 
+                // Сброс цвета после объединения
                 for (int i = left; i <= right; i++)
                 {
                     rectangles[i].Fill = defaultColor;
@@ -284,284 +268,300 @@ namespace partOne
             }
         }
 
-
-
         private async Task Merge(List<int> arr, int left, int mid, int right)
         {
-            logger.Log($"Сливаем массивы: [{left}:{mid}] и [{mid + 1}:{right}]");
+            logger.Log($"Начинаем слияние диапазонов [{left}:{mid}] и [{mid + 1}:{right}].");
+            LoadLogsToTextBox();
 
             int n1 = mid - left + 1;
             int n2 = right - mid;
 
+            // Создаем временные массивы
             int[] leftArray = new int[n1];
             int[] rightArray = new int[n2];
 
-            for (int i = 0; i < n1; i++)
-                leftArray[i] = arr[left + i];
-            for (int j = 0; j < n2; j++)
-                rightArray[j] = arr[mid + 1 + j];
+            for (int i = 0; i < n1; i++) leftArray[i] = arr[left + i];
+            for (int j = 0; j < n2; j++) rightArray[j] = arr[mid + 1 + j];
 
-            logger.Log("Левая часть: " + string.Join(", ", leftArray));
+            logger.Log($"Левая часть: {string.Join(", ", leftArray)}.");
+            LoadLogsToTextBox();
+            logger.Log($"Правая часть: {string.Join(", ", rightArray)}.");
             LoadLogsToTextBox();
 
-            logger.Log("Правая часть: " + string.Join(", ", rightArray));
-            LoadLogsToTextBox();
-
-            int iLeft = 0, iRight = 0;
-            int k = left;
+            int iLeft = 0, iRight = 0, k = left;
 
             while (iLeft < n1 && iRight < n2)
             {
-                rectangles[k].Fill = compareColor; 
+                // Подсветка сравниваемых элементов
                 rectangles[left + iLeft].Fill = compareColor;
                 rectangles[mid + 1 + iRight].Fill = compareColor;
                 Dispatcher.Invoke(() => UpdateRectangles(arr));
-
                 await Task.Delay(delay);
 
-                logger.Log($"Сравниваем: {leftArray[iLeft]} и {rightArray[iRight]}");
+                logger.Log($"Сравниваем элементы: {leftArray[iLeft]} и {rightArray[iRight]}.");
                 LoadLogsToTextBox();
 
                 if (leftArray[iLeft] <= rightArray[iRight])
                 {
                     arr[k] = leftArray[iLeft];
                     iLeft++;
-                    logger.Log($"Элемент {leftArray[iLeft - 1]} из левой части остался на своем месте.");
-                    LoadLogsToTextBox();
 
+                    logger.Log($"Элемент {arr[k]} из левой части вставлен на позицию {k}.");
+                    LoadLogsToTextBox();
                 }
                 else
                 {
                     arr[k] = rightArray[iRight];
                     iRight++;
-                    logger.Log($"Элемент {rightArray[iRight - 1]} из правой части переместился на позицию {k}.");
-                    LoadLogsToTextBox();
 
+                    logger.Log($"Элемент {arr[k]} из правой части вставлен на позицию {k}.");
+                    LoadLogsToTextBox();
                 }
 
+                // Подсветка перемещенного элемента
                 rectangles[k].Fill = swapColor;
                 Dispatcher.Invoke(() => UpdateRectangles(arr));
                 await Task.Delay(delay);
 
-                logger.Log($"Массив после замены: {string.Join(", ", arr)}");
-                LoadLogsToTextBox();
-
+                // Сброс цвета после обработки
                 rectangles[k].Fill = defaultColor;
-                if (left + iLeft - 1 >= left && left + iLeft - 1 < left + n1)
-                {
-                    rectangles[left + iLeft - 1].Fill = defaultColor;
-                }
-                if (mid + 1 + iRight - 1 >= mid + 1 && mid + 1 + iRight - 1 < mid + 1 + n2)
-                {
-                    rectangles[mid + 1 + iRight - 1].Fill = defaultColor;
-                }
-                Dispatcher.Invoke(() => UpdateRectangles(arr));
+                if (iLeft < n1) rectangles[left + iLeft].Fill = defaultColor;
+                if (iRight < n2) rectangles[mid + 1 + iRight].Fill = defaultColor;
 
+                Dispatcher.Invoke(() => UpdateRectangles(arr));
                 k++;
             }
 
+            // Копируем оставшиеся элементы левой части
             while (iLeft < n1)
             {
                 arr[k] = leftArray[iLeft];
 
+                // Подсветка перемещенного элемента
                 rectangles[k].Fill = swapColor;
-                rectangles[left + iLeft].Fill = compareColor;
                 Dispatcher.Invoke(() => UpdateRectangles(arr));
                 await Task.Delay(delay);
 
-                logger.Log($"Элемент {leftArray[iLeft]} из левой части переместился на позицию {k}.");
-                LoadLogsToTextBox();
-
-                logger.Log($"Массив после замены: {string.Join(", ", arr)}");
+                logger.Log($"Элемент {arr[k]} из левой части перемещен на позицию {k}.");
                 LoadLogsToTextBox();
 
                 rectangles[k].Fill = defaultColor;
-                rectangles[left + iLeft].Fill = defaultColor;
-                Dispatcher.Invoke(() => UpdateRectangles(arr));
-
                 iLeft++;
                 k++;
             }
 
+            // Копируем оставшиеся элементы правой части
             while (iRight < n2)
             {
                 arr[k] = rightArray[iRight];
 
+                // Подсветка перемещенного элемента
                 rectangles[k].Fill = swapColor;
-                rectangles[mid + 1 + iRight].Fill = compareColor;
                 Dispatcher.Invoke(() => UpdateRectangles(arr));
                 await Task.Delay(delay);
 
-                logger.Log($"Элемент {rightArray[iRight]} из правой части переместился на позицию {k}.");
+                logger.Log($"Элемент {arr[k]} из правой части перемещен на позицию {k}.");
                 LoadLogsToTextBox();
-
-                logger.Log($"Массив после замены: {string.Join(", ", arr)}");
-                LoadLogsToTextBox();
-
 
                 rectangles[k].Fill = defaultColor;
-                rectangles[mid + 1 + iRight].Fill = defaultColor;
-                Dispatcher.Invoke(() => UpdateRectangles(arr));
-
                 iRight++;
                 k++;
             }
+
+            logger.Log($"Слияние завершено: текущий массив: {string.Join(", ", arr.Skip(left).Take(right - left + 1))}.");
+            LoadLogsToTextBox();
         }
+
 
 
 
         private async Task ShellSort(List<int> arr)
         {
-            logger.Log("Сортировка Шелла – это модифицированая сортировка вставками. Ее суть в том, что массив данных разбивается на так называемые Gap’ы (зазоры). Каждая итерация сортировки – это сравнение элементов массива на расстоянии текущего зазора друг от друга, а затем упорядочивание этих элементов. С каждым проходом по массиву зазор уменьшается вдвое и эти действия повторяются до окончания сортировки.");
-            LoadLogsToTextBox();
-
             int n = arr.Count;
-            logger.Log("Начало сортировки Шелла. Исходный список: " + string.Join(", ", arr));
+            logger.Log("Запуск сортировки Шелла...");
             LoadLogsToTextBox();
 
             for (int gap = n / 2; gap > 0; gap /= 2)
             {
-                logger.Log($"Текущий зазор: {gap}");
+                logger.Log($"Обработка зазора {gap}.");
                 LoadLogsToTextBox();
 
-                for (int i = gap; i < n; i += 1)
+                for (int i = gap; i < n; i++)
                 {
                     int temp = arr[i];
-                    logger.Log($"Сравнение элемента {temp} (индекс {i})");
-                    LoadLogsToTextBox();
-
                     int j;
 
-                    for (j = i; j >= gap && arr[j - gap] > temp; j -= gap)
-                    {
-                        logger.Log($"Перемещение элемента {arr[j - gap]} с индекса {j - gap} на индекс {j}");
-                        LoadLogsToTextBox();
+                    // Лог сравнения
+                    logger.Log($"Сравнение элемента {temp} (индекс {i}).");
+                    LoadLogsToTextBox();
 
+                    for (j = i; j >= gap; j -= gap)
+                    {
                         // Выделяем сравниваемые элементы
                         rectangles[j].Fill = compareColor;
                         rectangles[j - gap].Fill = compareColor;
                         Dispatcher.Invoke(() => UpdateRectangles(arr));
                         await Task.Delay(delay);
 
-                        arr[j] = arr[j - gap];
+                        if (arr[j - gap] <= temp)
+                        {
+                            // Если элемент не нужно перемещать, сбрасываем цвета
+                            rectangles[j].Fill = defaultColor;
+                            rectangles[j - gap].Fill = defaultColor;
 
-                        // Выделяем перемещаемые элементы
+                            // Лог об отсутствии перемещения
+                            logger.Log($"Элементы {arr[j - gap]} (индекс {j - gap}) и {temp} (индекс {j}) не требуют перемещения.");
+                            LoadLogsToTextBox();
+                            break;
+                        }
+
+                        // Лог перемещения
+                        logger.Log($"Перемещение {arr[j - gap]} с индекса {j - gap} на индекс {j}.");
+                        LoadLogsToTextBox();
+
+                        // Выделяем элементы, подверженные смене позиции
                         rectangles[j].Fill = swapColor;
                         rectangles[j - gap].Fill = swapColor;
                         Dispatcher.Invoke(() => UpdateRectangles(arr));
                         await Task.Delay(delay);
 
+                        // Меняем местами элементы
+                        arr[j] = arr[j - gap];
+
+                        // Сбрасываем цвета после перемещения
                         rectangles[j].Fill = defaultColor;
                         rectangles[j - gap].Fill = defaultColor;
                     }
 
+                    // Вставляем элемент
                     arr[j] = temp;
-                    logger.Log($"Вставка элемента {temp} на позицию {j}");
+
+                    // Лог вставки
+                    logger.Log($"Элемент {temp} вставлен на позицию {j}.");
                     LoadLogsToTextBox();
 
-                    // Выделяем вставляемый элемент
+                    // Подсвечиваем вставленный элемент
                     rectangles[j].Fill = swapColor;
                     Dispatcher.Invoke(() => UpdateRectangles(arr));
                     await Task.Delay(delay);
+
                     rectangles[j].Fill = defaultColor;
                 }
 
-                logger.Log("Список после обработки зазора " + gap + ": " + string.Join(", ", arr));
+                // Лог состояния массива после обработки зазора
+                logger.Log($"Состояние списка после зазора {gap}: {string.Join(", ", arr)}.");
                 LoadLogsToTextBox();
             }
 
+            // Лог завершения
             logger.Log("Сортировка завершена. Отсортированный список: " + string.Join(", ", arr));
             LoadLogsToTextBox();
+
+            // Финальное выделение отсортированного массива
+            foreach (var rect in rectangles)
+            {
+                rect.Fill = Brushes.HotPink;//sortedColor; // Цвет для отсортированного массива
+            }
+            Dispatcher.Invoke(() => UpdateRectangles(arr));
+            await Task.Delay(delay * 2);
+
+            foreach (var rect in rectangles)
+            {
+                rect.Fill = defaultColor;
+            }
         }
+
 
         private async Task QuickSort(List<int> arr, int left, int right)
         {
-            logger.Log("Быстрая сортировка - это алгоритм \"разделяй и властвуй\", который рекурсивно сортирует массив, разделяя его на части относительно опорного элемента и объединяя отсортированные части.");
-            LoadLogsToTextBox();
-
-            logger.Log("Начало быстрой сортировки:");
-            LoadLogsToTextBox();
-
-            logger.Log($"Исходный массив: {string.Join(", ", list)}");
-            LoadLogsToTextBox();
             if (left < right)
             {
-
                 logger.Log($"QuickSort вызывается для диапазона [{left}, {right}].");
                 LoadLogsToTextBox();
 
                 int pi = await Partition(arr, left, right);
+
                 logger.Log($"Опорный элемент установлен на индекс {pi} со значением {arr[pi]}.");
                 LoadLogsToTextBox();
 
                 await QuickSort(arr, left, pi - 1);
                 await QuickSort(arr, pi + 1, right);
-
             }
         }
-       
 
-        private async Task<int> Partition(List<int> array, int left, int right)
+        private async Task<int> Partition(List<int> arr, int left, int right)
         {
-            int pivot = array[right];
+            int pivot = arr[right];
             logger.Log($"Выбран опорный элемент: {pivot} (индекс {right}).");
             LoadLogsToTextBox();
 
-            rectangles[right].Fill = compareColor; 
-            int i = (left - 1); 
+            rectangles[right].Fill = compareColor; // Подсветка опорного элемента
+            Dispatcher.Invoke(() => UpdateRectangles(arr));
+            await Task.Delay(delay);
+
+            int i = left - 1; // Индекс для элементов меньше опорного
 
             for (int j = left; j < right; j++)
             {
-                logger.Log($"Сравниваем array[{j}] = {array[j]} с pivot = {pivot}.");
+                // Подсветка сравниваемых элементов
+                rectangles[j].Fill = compareColor;
+                rectangles[right].Fill = compareColor;
+                Dispatcher.Invoke(() => UpdateRectangles(arr));
+                await Task.Delay(delay);
+
+                logger.Log($"Сравниваем array[{j}] = {arr[j]} с опорным элементом {pivot}.");
                 LoadLogsToTextBox();
 
-                rectangles[j].Fill = compareColor; 
-                Dispatcher.Invoke(() => UpdateRectangles(array));
-
-                if (array[j] < pivot)
+                if (arr[j] < pivot)
                 {
                     i++;
-                    (array[i], array[j]) = (array[j], array[i]);
 
-                    logger.Log($"Обмен: array[{i}] = {array[i]}, array[{j}] = {array[j]} -> {string.Join(", ", array)}");
+                    // Лог обмена
+                    logger.Log($"Обмен: array[{i}] = {arr[i]} и array[{j}] = {arr[j]}.");
                     LoadLogsToTextBox();
 
+                    // Подсветка элементов для обмена
                     rectangles[i].Fill = swapColor;
                     rectangles[j].Fill = swapColor;
 
+                    (arr[i], arr[j]) = (arr[j], arr[i]); // Обмен значений
+                    Dispatcher.Invoke(() => UpdateRectangles(arr));
                     await Task.Delay(delay);
-                    Dispatcher.Invoke(() =>
-                    {
-                        UpdateRectangles(array);
-                        rectangles[i].Fill = defaultColor;
-                        rectangles[j].Fill = defaultColor;
-                        UpdateRectangles(array);
-                    });
+
+                    // Сброс подсветки после обмена
+                    rectangles[i].Fill = defaultColor;
+                    rectangles[j].Fill = defaultColor;
                 }
                 else
                 {
-                    await Task.Delay(delay);
-                    Dispatcher.Invoke(() =>
-                    {
-                        rectangles[j].Fill = defaultColor; 
-
-                        UpdateRectangles(array);
-                    });
+                    logger.Log($"Элемент array[{j}] = {arr[j]} больше опорного, обмен не требуется.");
+                    LoadLogsToTextBox();
                 }
+
+                // Сброс подсветки текущего элемента
+                rectangles[j].Fill = defaultColor;
+                Dispatcher.Invoke(() => UpdateRectangles(arr));
             }
 
-            (array[i + 1], array[right]) = (array[right], array[i + 1]);
-            rectangles[right].Fill = defaultColor;  
-            logger.Log($"Обмен опорного элемента: array[{i + 1}] = {array[i + 1]}, array[{right}] = {array[right]} -> {string.Join(", ", array)}");
+            // Обмен опорного элемента с элементом на позиции i + 1
+            logger.Log($"Устанавливаем опорный элемент {pivot} на позицию {i + 1}.");
             LoadLogsToTextBox();
 
+            // Подсветка для обмена
+            rectangles[i + 1].Fill = swapColor;
+            rectangles[right].Fill = swapColor;
+
+            (arr[i + 1], arr[right]) = (arr[right], arr[i + 1]); // Обмен значений
+            Dispatcher.Invoke(() => UpdateRectangles(arr));
             await Task.Delay(delay);
-            Dispatcher.Invoke(() =>
-            {
-                UpdateRectangles(array);
-            });
+
+            // Сброс подсветки после обмена
+            rectangles[i + 1].Fill = defaultColor;
+            rectangles[right].Fill = defaultColor;
+
             return i + 1;
         }
+
 
         private void UpdateRectangles(List<int> arr)
         {
