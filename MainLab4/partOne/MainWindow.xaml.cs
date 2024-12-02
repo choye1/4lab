@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -40,7 +41,7 @@ namespace partOne
             LogTextBox.Clear();
             try
             {
-                delay = int.Parse(Delay.Text) * 1000;
+                delay = int.Parse(Delay.Text);
             }
             catch (Exception) 
             {
@@ -154,7 +155,7 @@ namespace partOne
 
             }
         }
-
+        #region Сортировка выбором
         public async Task SelectionSort(List<int> list)
         {
             int n = list.Count;
@@ -241,7 +242,9 @@ namespace partOne
             logger.Log($"Сортировка завершена: {string.Join(", ", list)}");
             LoadLogsToTextBox();
         }
+        #endregion
 
+        #region Сортировка слиянием
         private async Task MergeSort(List<int> arr, int left, int right)
         {
             logger.Log($"Начало сортировки слиянием для диапазона [{left}, {right}].");
@@ -371,10 +374,9 @@ namespace partOne
             logger.Log($"Слияние завершено: текущий массив: {string.Join(", ", arr.Skip(left).Take(right - left + 1))}.");
             LoadLogsToTextBox();
         }
+        #endregion
 
-
-
-
+        #region Сортировка Шелла
         private async Task ShellSort(List<int> arr)
         {
             int n = arr.Count;
@@ -470,8 +472,9 @@ namespace partOne
                 rect.Fill = defaultColor;
             }
         }
+        #endregion
 
-
+        #region Быстрая сортировка
         private async Task QuickSort(List<int> arr, int left, int right)
         {
             if (left < right)
@@ -561,7 +564,7 @@ namespace partOne
 
             return i + 1;
         }
-
+        #endregion
 
         private void UpdateRectangles(List<int> arr)
         {
@@ -604,19 +607,24 @@ namespace partOne
             }
         }
 
-        private void Back(object sender, RoutedEventArgs e)
+        private void OpenFile(object sender, RoutedEventArgs e)
         {
+            OpenFileDialog fileDialog = new OpenFileDialog();
+            fileDialog.Filter = "Text doc | *.txt";
 
-        }
+            bool? success = fileDialog.ShowDialog();
+            if (success == true)
+            {
+                string path = fileDialog.FileName;
+                
+                string str = File.ReadAllText(path);
+                
+                AddList.Text = str;
+            }
+            else
+            {
 
-        private void Stop(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void Forward(object sender, RoutedEventArgs e)
-        {
-
+            }
         }
     }
 }
