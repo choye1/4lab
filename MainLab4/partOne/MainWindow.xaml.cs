@@ -460,10 +460,7 @@ namespace partOne
             LoadLogsToTextBox();
 
             // Финальное выделение отсортированного массива
-            foreach (var rect in rectangles)
-            {
-                rect.Fill = Brushes.HotPink;//sortedColor; // Цвет для отсортированного массива
-            }
+            
             Dispatcher.Invoke(() => UpdateRectangles(arr));
             await Task.Delay(delay * 2);
 
