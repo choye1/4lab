@@ -3,20 +3,48 @@ using System.Collections.ObjectModel;
 using System.Data;
 using System.IO;
 using System.Reflection.PortableExecutable;
+using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using ClosedXML.Excel;
 using Microsoft.Win32;
 using OfficeOpenXml;
 using static Part2.MainWindow;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using Microsoft.Win32;
+using ClosedXML.Excel;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using Microsoft.Win32;
+using ClosedXML.Excel;
 
 namespace Part2
 {
     public partial class MainWindow : Window
     {
+        private StringBuilder log;
+        private int delay;
+        private SolidColorBrush defaultColor = Brushes.LightBlue;
+        private List<Dictionary<string, string>> table;
+        private string[] headers;
         private static string curDir = Directory.GetCurrentDirectory();
         private string _filePath = System.IO.Path.Combine(curDir, "sorted_result.xlsx");
         private List<TableState> _states = new List<TableState>();
@@ -24,74 +52,565 @@ namespace Part2
         private CancellationTokenSource _cancellationTokenSource;
         private ObservableCollection<string> _logItems = new ObservableCollection<string>();
         private bool _isAutoPlaying = false;
-        String[]? headers;
+
         public MainWindow()
         {
             InitializeComponent();
-            // Установка лицензии для EPPlus
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            log = new StringBuilder();
+            delay = 500; // Default delay in ms
         }
 
-        private void BrowseFile_Click(object sender, RoutedEventArgs e)
+        private void LoadExcelButton_Click(object sender, RoutedEventArgs e)
         {
             var openFileDialog = new OpenFileDialog
             {
-                Filter = "Excel Files (*.xlsx)|*.xlsx|CSV Files (*.csv)|*.csv|All Files (*.*)|*.*"
+                Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*"
             };
 
             if (openFileDialog.ShowDialog() == true)
             {
-                _filePath = openFileDialog.FileName;
-                FilePathBox.Text = _filePath;
+                using (var workbook = new XLWorkbook(openFileDialog.FileName))
+                {
+                    var worksheet = workbook.Worksheet(1);
+                    headers = worksheet.FirstRowUsed()
+                                       .CellsUsed()
+                                       .Select(cell => cell.Value.ToString())
+                                       .ToArray();
 
-                if (System.IO.Path.GetExtension(_filePath).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
-                {
-                    LoadExcelData(_filePath);
+                    table = worksheet.RowsUsed()
+                                     .Skip(1)
+                                     .Select(row => headers.Zip(row.CellsUsed().Select(cell => cell.Value.ToString()),
+                                                                (header, value) => new { header, value })
+                                                            .ToDictionary(x => x.header, x => x.value))
+                                     .ToList();
                 }
-                else
-                {
-                    // Загрузить атрибуты из файла
-                    headers = File.ReadLines(_filePath).First().Split(',');
-                    KeyAttributesListBox.ItemsSource = headers;
-                }
+
+                // Display data in DataGrid
+                
+                    _filePath = openFileDialog.FileName;
+
+                    if (System.IO.Path.GetExtension(_filePath).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
+                    {
+                        LoadExcelData(_filePath);
+                    }
+                    else
+                    {
+                        // Загрузить атрибуты из файла
+                        headers = File.ReadLines(_filePath).First().Split(',');
+                    }
+                
+
+                ExcelColumnComboBox.ItemsSource = headers;
+                Log("Excel-файл загружен. Выберите колонку для сортировки.");
             }
         }
 
-        private void GoBack_Click(object sender, RoutedEventArgs e)
+        private async void StartSorting_Click(object sender, RoutedEventArgs e)
         {
-            GoBack();
-        }
-
-        private void GoForward_Click(object sender, RoutedEventArgs e)
-        {
-            GoForward();
-        }
-
-        private void ClearButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Очистка всех данных и сброс состояния
-            _filePath = string.Empty;
-            FilePathBox.Text = string.Empty;
-            KeyAttributesListBox.ItemsSource = null;
-            SortMethodComboBox.SelectedItem = null;
-            DelayBox.Text = string.Empty;
-
-            _logItems.Clear();
-            dataGrid.ItemsSource = null;
-            _states.Clear();
-            _currentStateIndex = -1;
-            _isAutoPlaying = false;
-            if (_cancellationTokenSource != null)
+            if (table == null || headers == null || ExcelColumnComboBox.SelectedItem == null)
             {
-                _cancellationTokenSource.Cancel();
-                _cancellationTokenSource = null;
+                Log("Не выбран файл или колонка для сортировки.");
+                return;
             }
 
-            // Очистка подсветки строк
-            ClearHighlight();
+            StartSorting.IsEnabled = false;
+            string sortKey = ExcelColumnComboBox.SelectedItem.ToString();
+            Log($"Сортировка по колонке: {sortKey}");
 
-            MessageBox.Show("Данные очищены. Вы можете начать сортировку заново.");
+            if (DirectMergeSortRadioButton.IsChecked == true)
+            {
+                await DirectMergeSort(table, sortKey);
+            }
+            else if (NaturalMergeSortRadioButton.IsChecked == true)
+            {
+                await NaturalMergeSort(table, sortKey);
+            }
+            else if (MultiwayMergeSortRadioButton.IsChecked == true)
+            {
+                await ThreeWayMergeSort(table, sortKey);
+            }
 
+            Log("Сортировка завершена.");
+            StartSorting.IsEnabled = true;
+        }
+
+        private void DelaySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            delay = (int)e.NewValue;
+            DelayLabel.Content = $"Задержка: {delay} мс"; // Обновляем Label с задержкой
+        }
+
+        private async Task NaturalMergeSort(List<Dictionary<string, string>> table, string sortKey)
+        {
+            int n = table.Count;
+            int step = 1; // Номер шага сортировки
+
+            while (true)
+            {
+                // Шаг 1: Разделение на естественные серии
+                var fileB = new List<Dictionary<string, string>>();
+                var fileC = new List<Dictionary<string, string>>();
+                bool writeToB = true; // Чередуем запись между B и C
+
+                Log($"\nШаг {step}: Начинаем разбиение исходного массива на естественные серии.");
+                int i = 0;
+                while (i < n)
+                {
+                    var series = new List<Dictionary<string, string>>();
+                    series.Add(table[i]); // Начинаем серию с текущего элемента
+                    Log($"Создаём новую серию, добавляем элемент {table[i][sortKey]}");
+                    Dictionary<string, string> highlightedA = table[i];
+                    await VisualizeCurrentState(table, fileB, fileC, sortKey, highlightedA: highlightedA);
+
+                    // Находим серию максимальной длины
+                    while (i + 1 < n && CompareValues(table[i][sortKey], table[i + 1][sortKey]) <= 0)
+                    {
+                        i++;
+                        series.Add(table[i]);
+                        Log($"Добавляем элемент {table[i][sortKey]} в текущую серию.");
+                        highlightedA = table[i];
+                        await VisualizeCurrentState(table, fileB, fileC, sortKey, highlightedA: highlightedA);
+                    }
+                    i++;
+
+                    // Записываем серию либо в B, либо в C
+                    if (writeToB)
+                    {
+                        fileB.AddRange(series);
+                        Log($"Серия {string.Join(", ", series.Select(row => row[sortKey]))} записана в файл B.");
+                    }
+                    else
+                    {
+                        fileC.AddRange(series);
+                        Log($"Серия {string.Join(", ", series.Select(row => row[sortKey]))} записана в файл C.");
+                    }
+
+                    writeToB = !writeToB; // Чередуем файл
+
+                    // Визуализация текущего разбиения
+                    await VisualizeCurrentState(table, fileB, fileC, sortKey);
+                }
+
+                Log($"\nПосле разбиения:\nB: {string.Join(", ", fileB.Select(row => row[sortKey]))}\nC: {string.Join(", ", fileC.Select(row => row[sortKey]))}");
+
+                // Если файл C пуст, значит сортировка завершена
+                if (fileC.Count == 0)
+                {
+                    Log("Файл C пуст. Сортировка завершена.");
+                    return;
+                }
+
+                // Шаг 2: Слияние серий
+                Log("\nНачинаем слияние файлов B и C обратно в файл A.");
+                table.Clear();
+                int bIndex = 0, cIndex = 0;
+
+                while (bIndex < fileB.Count || cIndex < fileC.Count)
+                {
+                    // Определяем границы серий для слияния
+                    int bEnd = bIndex;
+                    int cEnd = cIndex;
+
+                    if (bIndex < fileB.Count)
+                    {
+                        bEnd++;
+                        while (bEnd < fileB.Count && CompareValues(fileB[bEnd - 1][sortKey], fileB[bEnd][sortKey]) <= 0)
+                        {
+                            bEnd++;
+                        }
+                    }
+
+                    if (cIndex < fileC.Count)
+                    {
+                        cEnd++;
+                        while (cEnd < fileC.Count && CompareValues(fileC[cEnd - 1][sortKey], fileC[cEnd][sortKey]) <= 0)
+                        {
+                            cEnd++;
+                        }
+                    }
+
+                    Log($"\nПодготавливаем к слиянию серии из файла B: {string.Join(", ", fileB.GetRange(bIndex, bEnd - bIndex).Select(row => row[sortKey]))}");
+                    Log($"Подготавливаем к слиянию серии из файла C: {string.Join(", ", fileC.GetRange(cIndex, cEnd - cIndex).Select(row => row[sortKey]))}");
+                    await VisualizeCurrentState(table, fileB, fileC, sortKey, highlightedSeriesB: fileB.GetRange(bIndex, bEnd - bIndex), highlightedSeriesC: fileC.GetRange(cIndex, cEnd - cIndex));
+
+                    // Слияние серий обратно в A
+                    while (bIndex < bEnd || cIndex < cEnd)
+                    {
+                        Dictionary<string, string> highlightedB = bIndex < bEnd ? fileB[bIndex] : null;
+                        Dictionary<string, string> highlightedC = cIndex < cEnd ? fileC[cIndex] : null;
+                        await VisualizeCurrentState(table, fileB, fileC, sortKey, highlightedB, highlightedC);
+
+                        if (bIndex < bEnd && (cIndex >= cEnd || CompareValues(fileB[bIndex][sortKey], fileC[cIndex][sortKey]) <= 0))
+                        {
+                            Log($"Сравнение: {fileB[bIndex][sortKey]} (из B) < {fileC.ElementAtOrDefault(cIndex)?[sortKey]} (из C): Берём {fileB[bIndex][sortKey]} из B.");
+                            table.Add(fileB[bIndex]);
+                            fileB.RemoveAt(bIndex);
+                            bEnd--;
+                            await VisualizeCurrentState(table, fileB, fileC, sortKey);
+                        }
+                        else if (cIndex < cEnd)
+                        {
+                            Log($"Сравнение: {fileC[cIndex][sortKey]} (из C) <= {fileB.ElementAtOrDefault(bIndex)?[sortKey]} (из B): Берём {fileC[cIndex][sortKey]} из C.");
+                            table.Add(fileC[cIndex]);
+                            fileC.RemoveAt(cIndex);
+                            cEnd--;
+                            await VisualizeCurrentState(table, fileB, fileC, sortKey);
+                        }
+                    }
+                }
+
+                Log($"\nПосле слияния: {string.Join(", ", table.Select(row => row[sortKey]))}");
+                await VisualizeCurrentState(table, fileB, fileC, sortKey);
+
+                step++;
+            }
+        }
+
+        private async Task ThreeWayMergeSort(List<Dictionary<string, string>> table, string sortKey)
+        {
+            int n = table.Count;
+            int seriesLength = 1; // Начальная длина цепочки
+            int step = 1;
+
+            while (seriesLength < n)
+            {
+                Log($"Шаг {step}: Длина цепочек для разбиения = {seriesLength}");
+
+                // 1. Разделение массива на три вспомогательных файла
+                var fileB = new List<Dictionary<string, string>>();
+                var fileC = new List<Dictionary<string, string>>();
+                var fileD = new List<Dictionary<string, string>>();
+
+                int i = 0;
+                while (i < table.Count)
+                {
+                    Log("Начинаем разбиение массива A на файлы B, C и D.");
+
+                    for (int j = 0; j < seriesLength && i < table.Count; j++)
+                    {
+                        // Подсветка элемента перед переносом в файл B
+                        if (i < table.Count)
+                        {
+                            Dictionary<string, string> highlightedA = table[i];
+                            await VisualizeCurrentState(table, fileB, fileC, fileD, sortKey, highlightedA: highlightedA);
+                            fileB.Add(table[i]);
+                            Log($"Добавляем элемент {table[i][sortKey]} в файл B.");
+                            table.RemoveAt(i);
+                        }
+                    }
+
+                    for (int j = 0; j < seriesLength && i < table.Count; j++)
+                    {
+                        // Подсветка элемента перед переносом в файл C
+                        if (i < table.Count)
+                        {
+                            Dictionary<string, string> highlightedA = table[i];
+                            await VisualizeCurrentState(table, fileB, fileC, fileD, sortKey, highlightedA: highlightedA);
+                            fileC.Add(table[i]);
+                            Log($"Добавляем элемент {table[i][sortKey]} в файл C.");
+                            table.RemoveAt(i);
+                        }
+                    }
+
+                    for (int j = 0; j < seriesLength && i < table.Count; j++)
+                    {
+                        // Подсветка элемента перед переносом в файл D
+                        if (i < table.Count)
+                        {
+                            Dictionary<string, string> highlightedA = table[i];
+                            await VisualizeCurrentState(table, fileB, fileC, fileD, sortKey, highlightedA: highlightedA);
+                            fileD.Add(table[i]);
+                            Log($"Добавляем элемент {table[i][sortKey]} в файл D.");
+                            table.RemoveAt(i);
+                        }
+                    }
+
+                    // Визуализация текущего разбиения
+                    await VisualizeCurrentState(table, fileB, fileC, fileD, sortKey);
+                }
+
+                Log($"После разбиения:\nB: {string.Join(", ", fileB.Select(row => row[sortKey]))}\nC: {string.Join(", ", fileC.Select(row => row[sortKey]))}\nD: {string.Join(", ", fileD.Select(row => row[sortKey]))}");
+
+                // 2. Слияние данных из трех вспомогательных файлов обратно в основной массив (A)
+                Log("\nНачинаем слияние файлов B, C и D обратно в файл A.");
+                table.Clear();
+                int bIndex = 0, cIndex = 0, dIndex = 0;
+
+                while (bIndex < fileB.Count || cIndex < fileC.Count || dIndex < fileD.Count)
+                {
+                    // Определяем границы серий для слияния
+                    int bEnd = Math.Min(bIndex + seriesLength, fileB.Count);
+                    int cEnd = Math.Min(cIndex + seriesLength, fileC.Count);
+                    int dEnd = Math.Min(dIndex + seriesLength, fileD.Count);
+
+                    // Подсветка серий, которые сливаются
+                    await VisualizeCurrentState(table, fileB, fileC, fileD, sortKey, highlightedSeriesB: fileB.GetRange(bIndex, bEnd - bIndex), highlightedSeriesC: fileC.GetRange(cIndex, cEnd - cIndex), highlightedSeriesD: fileD.GetRange(dIndex, dEnd - dIndex));
+
+                    // Слияние серий обратно в A
+                    while (bIndex < bEnd || cIndex < cEnd || dIndex < dEnd)
+                    {
+                        Dictionary<string, string> highlightedB = bIndex < bEnd ? fileB[bIndex] : null;
+                        Dictionary<string, string> highlightedC = cIndex < cEnd ? fileC[cIndex] : null;
+                        Dictionary<string, string> highlightedD = dIndex < dEnd ? fileD[dIndex] : null;
+                        await VisualizeCurrentState(table, fileB, fileC, fileD, sortKey, highlightedB, highlightedC, highlightedD);
+
+                        if (bIndex < bEnd && (cIndex >= cEnd || CompareValues(fileB[bIndex][sortKey], fileC[cIndex][sortKey]) <= 0) && (dIndex >= dEnd || CompareValues(fileB[bIndex][sortKey], fileD[dIndex][sortKey]) <= 0))
+                        {
+                            Log($"Сравнение: {fileB[bIndex][sortKey]} (из B) < {fileC.ElementAtOrDefault(cIndex)?[sortKey]} (из C) и {fileD.ElementAtOrDefault(dIndex)?[sortKey]} (из D): Берём {fileB[bIndex][sortKey]} из B.");
+                            table.Add(fileB[bIndex]);
+                            fileB.RemoveAt(bIndex);
+                            bEnd--;
+                            await VisualizeCurrentState(table, fileB, fileC, fileD, sortKey);
+                        }
+                        else if (cIndex < cEnd && (dIndex >= dEnd || CompareValues(fileC[cIndex][sortKey], fileD[dIndex][sortKey]) <= 0))
+                        {
+                            Log($"Сравнение: {fileC[cIndex][sortKey]} (из C) <= {fileD.ElementAtOrDefault(dIndex)?[sortKey]} (из D): Берём {fileC[cIndex][sortKey]} из C.");
+                            table.Add(fileC[cIndex]);
+                            fileC.RemoveAt(cIndex);
+                            cEnd--;
+                            await VisualizeCurrentState(table, fileB, fileC, fileD, sortKey);
+                        }
+                        else if (dIndex < dEnd)
+                        {
+                            Log($"Берём {fileD[dIndex][sortKey]} из D.");
+                            table.Add(fileD[dIndex]);
+                            fileD.RemoveAt(dIndex);
+                            dEnd--;
+                            await VisualizeCurrentState(table, fileB, fileC, fileD, sortKey);
+                        }
+                    }
+                }
+
+                Log($"\nПосле слияния: {string.Join(", ", table.Select(row => row[sortKey]))}");
+                await VisualizeCurrentState(table, fileB, fileC, fileD, sortKey);
+
+                // Увеличение длины серии и номера шага
+                seriesLength *= 3; // Увеличиваем длину цепочки втрое
+                step++;
+            }
+        }
+
+        private async Task DirectMergeSort(List<Dictionary<string, string>> table, string sortKey)
+        {
+            int n = table.Count;
+            int seriesLength = 1;
+            int step = 1; // Номер шага сортировки
+
+            // Создаем постоянное отображение для всех файлов: A, B, и C
+            var fileB = new List<Dictionary<string, string>>();
+            var fileC = new List<Dictionary<string, string>>();
+
+            while (seriesLength < n)
+            {
+                Log($"\nШаг {step}: Длина цепочек для разбиения = {seriesLength}");
+
+                // 1. Разделение исходного массива на два вспомогательных файла
+                fileB.Clear();
+                fileC.Clear();
+
+                int i = 0;
+                while (i < table.Count)
+                {
+                    Log("\nНачинаем разбиение массива A на файлы B и C.");
+                    for (int j = 0; j < seriesLength && i < table.Count; j++)
+                    {
+                        Log($"Подготовка к переносу элемента {table[i][sortKey]} в файл B.");
+                        Dictionary<string, string> highlightedA = table[i];
+                        await VisualizeCurrentState(table, fileB, fileC, sortKey, highlightedA: highlightedA);
+
+                        fileB.Add(table[i]);
+                        Log($"Добавляем элемент {table[i][sortKey]} в файл B и удаляем его из файла A.");
+                        table.RemoveAt(i);
+                    }
+
+                    for (int j = 0; j < seriesLength && i < table.Count; j++)
+                    {
+                        Log($"Подготовка к переносу элемента {table[i][sortKey]} в файл C.");
+                        Dictionary<string, string> highlightedA = table[i];
+                        await VisualizeCurrentState(table, fileB, fileC, sortKey, highlightedA: highlightedA);
+
+                        fileC.Add(table[i]);
+                        Log($"Добавляем элемент {table[i][sortKey]} в файл C и удаляем его из файла A.");
+                        table.RemoveAt(i);
+                    }
+
+                    Log("\nТекущее состояние после разбиения:");
+                    await VisualizeCurrentState(table, fileB, fileC, sortKey);
+                }
+
+                Log($"\nПосле разбиения:\nB: {string.Join(", ", fileB.Select(row => row[sortKey]))}\nC: {string.Join(", ", fileC.Select(row => row[sortKey]))}");
+
+                // 2. Слияние вспомогательных файлов обратно в основной массив (A)
+                Log("\nНачинаем слияние файлов B и C обратно в файл A.");
+                table.Clear();
+                int bIndex = 0, cIndex = 0;
+
+                while (bIndex < fileB.Count || cIndex < fileC.Count)
+                {
+                    int bEnd = Math.Min(bIndex + seriesLength, fileB.Count);
+                    int cEnd = Math.Min(cIndex + seriesLength, fileC.Count);
+
+                    Log($"\nПодготавливаем к слиянию серии из файла B: {string.Join(", ", fileB.GetRange(bIndex, bEnd - bIndex).Select(row => row[sortKey]))}");
+                    Log($"Подготавливаем к слиянию серии из файла C: {string.Join(", ", fileC.GetRange(cIndex, cEnd - cIndex).Select(row => row[sortKey]))}");
+                    await VisualizeCurrentState(table, fileB, fileC, sortKey, highlightedSeriesB: fileB.GetRange(bIndex, bEnd - bIndex), highlightedSeriesC: fileC.GetRange(cIndex, cEnd - cIndex));
+
+                    while (bIndex < bEnd || cIndex < cEnd)
+                    {
+                        Dictionary<string, string> highlightedB = bIndex < bEnd ? fileB[bIndex] : null;
+                        Dictionary<string, string> highlightedC = cIndex < cEnd ? fileC[cIndex] : null;
+                        await VisualizeCurrentState(table, fileB, fileC, sortKey, highlightedB, highlightedC);
+
+                        if (bIndex < bEnd && (cIndex >= cEnd || CompareValues(fileB[bIndex][sortKey], fileC[cIndex][sortKey]) <= 0))
+                        {
+                            Log($"Сравнение: {fileB[bIndex][sortKey]} (из B) < {fileC.ElementAtOrDefault(cIndex)?[sortKey]} (из C): Берём {fileB[bIndex][sortKey]} из B.");
+                            table.Add(fileB[bIndex]);
+                            fileB.RemoveAt(bIndex); // Удаляем элемент из файла B
+                            bEnd--; // Корректируем конечный индекс для серии B
+                            await VisualizeCurrentState(table, fileB, fileC, sortKey);
+                        }
+                        else if (cIndex < cEnd)
+                        {
+                            Log($"Сравнение: {fileC[cIndex][sortKey]} (из C) <= {fileB.ElementAtOrDefault(bIndex)?[sortKey]} (из B): Берём {fileC[cIndex][sortKey]} из C.");
+                            table.Add(fileC[cIndex]);
+                            fileC.RemoveAt(cIndex); // Удаляем элемент из файла C
+                            cEnd--; // Корректируем конечный индекс для серии C
+                            await VisualizeCurrentState(table, fileB, fileC, sortKey);
+                        }
+                    }
+                }
+
+                Log($"\nПосле слияния: {string.Join(", ", table.Select(row => row[sortKey]))}");
+                await VisualizeCurrentState(table, fileB, fileC, sortKey);
+
+                // Увеличение длины серии и номера шага
+                seriesLength *= 2;
+                step++;
+            }
+        }
+
+        private async Task VisualizeCurrentState(List<Dictionary<string, string>> table, List<Dictionary<string, string>> fileB, List<Dictionary<string, string>> fileC, List<Dictionary<string, string>> fileD, string sortKey, Dictionary<string, string> highlightedB = null, Dictionary<string, string> highlightedC = null, Dictionary<string, string> highlightedD = null, Dictionary<string, string> highlightedA = null, List<Dictionary<string, string>> highlightedSeriesB = null, List<Dictionary<string, string>> highlightedSeriesC = null, List<Dictionary<string, string>> highlightedSeriesD = null)
+        {
+            SortCanvas.Children.Clear();
+            double canvasWidth = SortCanvas.ActualWidth;
+            double blockWidth = canvasWidth / 4; // We have four blocks: A, B, C, D
+
+            // Draw file A with highlight
+            DrawBlock(table, blockWidth, 0, "A", sortKey, highlightedA, Brushes.LightBlue);
+
+            // Draw file B with highlighted series
+            DrawBlock(fileB, blockWidth, blockWidth, "B", sortKey, highlightedB, Brushes.LightSkyBlue, highlightedSeriesB, Brushes.LightGreen);
+
+            // Draw file C with highlighted series
+            DrawBlock(fileC, blockWidth, 2 * blockWidth, "C", sortKey, highlightedC, Brushes.MediumPurple, highlightedSeriesC, Brushes.LightPink);
+
+            // Draw file D with highlighted series
+            DrawBlock(fileD, blockWidth, 3 * blockWidth, "D", sortKey, highlightedD, Brushes.LightCoral, highlightedSeriesD, Brushes.LightYellow);
+
+            await Task.Delay(delay); // Небольшая задержка для визуализации
+        }
+
+        private async Task VisualizeCurrentState(List<Dictionary<string, string>> table, List<Dictionary<string, string>> fileB, List<Dictionary<string, string>> fileC, string sortKey, Dictionary<string, string> highlightedB = null, Dictionary<string, string> highlightedC = null, Dictionary<string, string> highlightedA = null, List<Dictionary<string, string>> highlightedSeriesB = null, List<Dictionary<string, string>> highlightedSeriesC = null)
+        {
+            SortCanvas.Children.Clear();
+            double canvasWidth = SortCanvas.ActualWidth;
+            double blockWidth = canvasWidth / 3; // We have three blocks: A, B, C
+
+            // Draw file A with highlight
+            DrawBlock(table, blockWidth, 0, "A", sortKey, highlightedA, Brushes.LightBlue);
+
+            // Draw file B with highlighted series
+            DrawBlock(fileB, blockWidth, blockWidth, "B", sortKey, highlightedB, Brushes.LightSkyBlue, highlightedSeriesB, Brushes.LightGreen);
+
+            // Draw file C with highlighted series
+            DrawBlock(fileC, blockWidth, 2 * blockWidth, "C", sortKey, highlightedC, Brushes.MediumPurple, highlightedSeriesC, Brushes.LightPink);
+
+            await Task.Delay(delay); // Небольшая задержка для визуализации
+        }
+
+        private void DrawBlock(List<Dictionary<string, string>> block, double blockWidth, double offsetX, string label, string sortKey, Dictionary<string, string> highlighted = null, Brush highlightColor = null, List<Dictionary<string, string>> highlightedSeries = null, Brush seriesHighlightColor = null)
+        {
+            double rectHeight = block.Count * 20;
+
+            var rect = new Rectangle
+            {
+                Width = blockWidth - 10,
+                Height = rectHeight,
+                Fill = defaultColor,
+                Stroke = Brushes.Black,
+                StrokeThickness = 1
+            };
+
+            Canvas.SetLeft(rect, offsetX);
+            Canvas.SetTop(rect, SortCanvas.ActualHeight - rectHeight - 20);
+            SortCanvas.Children.Add(rect);
+
+            // Label for the block
+            var blockLabel = new TextBlock
+            {
+                Text = label,
+                Foreground = Brushes.Black,
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
+                TextAlignment = TextAlignment.Center
+            };
+            Canvas.SetLeft(blockLabel, offsetX + blockWidth / 2 - 30);
+            Canvas.SetTop(blockLabel, SortCanvas.ActualHeight - rectHeight - 40);
+            SortCanvas.Children.Add(blockLabel);
+
+            for (int j = 0; j < block.Count; j++)
+            {
+                if (block[j] == null) continue;
+
+                string key = block[j][headers[0]]; // Название строки (значение первого столбца)
+                string value = block[j][sortKey]; // Значение для сортировки
+
+                var labelItem = new TextBlock
+                {
+                    Text = $"{key} ({value})",
+                    Foreground = Brushes.Black,
+                    Background = (block[j] == highlighted && highlightColor != null) ? highlightColor :
+                                 (highlightedSeries != null && highlightedSeries.Contains(block[j]) && seriesHighlightColor != null) ? seriesHighlightColor :
+                                 Brushes.White,
+                    TextAlignment = TextAlignment.Center,
+                    Width = blockWidth - 10,
+                    Height = 20
+                };
+
+                Canvas.SetLeft(labelItem, offsetX);
+                Canvas.SetTop(labelItem, SortCanvas.ActualHeight - rectHeight + j * 20 - 20);
+                SortCanvas.Children.Add(labelItem);
+            }
+        }
+
+        private int CompareValues(string value1, string value2)
+        {
+            if (double.TryParse(value1, out var num1) && double.TryParse(value2, out var num2))
+            {
+                return num1.CompareTo(num2);
+            }
+            return string.Compare(value1, value2, StringComparison.Ordinal);
+        }
+
+        private void Log(string message)
+        {
+            log.AppendLine(message);
+            LogTextBox.Text = log.ToString();
+            LogTextBox.ScrollToEnd();
+        }
+
+        private void DirectMergeSortRadioButton_Checked_1(object sender, RoutedEventArgs e)
+        {
+            LogTextBox_Algorithm.Text = "Алгоритм сортировки простым слиянием является простейшим алгоритмом внешней сортировки, основанный на процедуре слияния серией.\r\n\r\nВ данном алгоритме длина серий фиксируется на каждом шаге. В исходном файле все серии имеют длину 1, после первого шага она равна 2, после второго – 4, после третьего – 8, после k -го шага – 2k.\r\n\r\nАлгоритм сортировки простым слиянием\r\n\r\nШаг 1. Исходный файл A разбивается на два вспомогательных файла B и C.\r\n\r\nШаг 2. Вспомогательные файлы B и C сливаются в файл A, при этом одиночные элементы образуют упорядоченные пары.\r\n\r\nШаг 3. Полученный файл A вновь обрабатывается, как указано в шагах 1 и 2. При этом упорядоченные пары переходят в упорядоченные четверки.\r\n\r\nШаг 4. Повторяя шаги, сливаем четверки в восьмерки и т.д., каждый раз удваивая длину слитых последовательностей до тех пор, пока не будет упорядочен целиком весь файл.\r\n\r\nПосле выполнения i проходов получаем два файла, состоящих из серий длины 2i. Окончание процесса происходит при выполнении условия 2i>=n. Следовательно, процесс сортировки простым слиянием требует порядка O(log n) проходов по данным.\r\n\r\nПризнаками конца сортировки простым слиянием являются следующие условия:\r\n\r\nдлина серии не меньше количества элементов в файле (определяется после фазы слияния);\r\nколичество серий равно 1 (определяется на фазе слияния).\r\nпри однофазной сортировке второй по счету вспомогательный файл после распределения серий остался пустым.";
+        }
+
+        private void NaturalMergeSortRadioButton_Checked_1(object sender, RoutedEventArgs e)
+        {
+            LogTextBox_Algorithm.Text = "Алгоритм сортировки естественным слиянием\r\n\r\nШаг 1. Исходный файл A разбивается на два вспомогательных файла B и C. Распределение происходит следующим образом: поочередно считываются записи ai исходной последовательности (неупорядоченной) таким образом, что если значения ключей соседних записей удовлетворяют условию A(ai)<=A(ai+1), то они записываются в первый вспомогательный файл B. Как только встречаются A(ai)>A(ai+1), то записи ai+1 копируются во второй вспомогательный файл C. Процедура повторяется до тех пор, пока все записи исходной последовательности не будут распределены по файлам.\r\n\r\nШаг 2. Вспомогательные файлы B и C сливаются в файл A, при этом серии образуют упорядоченные последовательности.\r\n\r\nШаг 3. Полученный файл A вновь обрабатывается, как указано в шагах 1 и 2.\r\n\r\nШаг 4. Повторяя шаги, сливаем упорядоченные серии до тех пор, пока не будет упорядочен целиком весь файл.\r\n\r\n Признаками конца сортировки естественным слиянием являются следующие условия:\r\n\r\nколичество серий равно 1 (определяется на фазе слияния).\r\nпри однофазной сортировке второй по счету вспомогательный файл после распределения серий остался пустым.";
+        }
+
+        private void MultiwayMergeSortRadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            LogTextBox_Algorithm.Text = "Процесс многопутевого слияния почти как две капли воды схож с процессом прямого слияния. За одним лишь тем исключением, что мы будем использовать больше двух подфайлов. В своём примере я продемонстрирую трёхпутевой метод (значит, кол-во подфайлов будет равно трём).";
         }
         private void LoadExcelData(string filePath)
         {
@@ -124,848 +643,8 @@ namespace Part2
                     dataTable.Rows.Add(dataRow);
                 }
 
-                dataGrid.ItemsSource = dataTable.DefaultView;
-                KeyAttributesListBox.ItemsSource = dataTable.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToList();
+                DataGrid.ItemsSource = dataTable.DefaultView;
             }
         }
-
-        private void StartSort_Click(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(_filePath) || KeyAttributesListBox.SelectedItems.Count == 0 || SortMethodComboBox.SelectedItem == null)
-            {
-                MessageBox.Show("Заполните все поля перед началом сортировки.");
-                return;
-            }
-
-            string sortMethod = ((ComboBoxItem)SortMethodComboBox.SelectedItem).Content.ToString();
-            var keys = KeyAttributesListBox.SelectedItems.Cast<string>().ToList();
-            int delay = int.TryParse(DelayBox.Text, out int d) ? d : 500;
-
-            LogBox.Items.Add("Начинаем сортировку...");
-
-            PerformSort(_filePath, keys, sortMethod, delay);
-        }
-
-        private void PerformSort(string filePath, List<string> keys, string method, int delay)
-        {
-            try
-            {
-                List<string> lines = new List<string>();
-                if (System.IO.Path.GetExtension(filePath).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
-                {
-                    lines = LoadExcelDataAsXlsx(filePath);
-                }
-                else
-                {
-                    lines = File.ReadAllLines(filePath).ToList();
-                }
-
-                headers = lines.First().Split(',');
-                var keyIndices = keys.Select(key => Array.IndexOf(headers, key)).ToList();
-
-                if (keyIndices.Any(index => index == -1))
-                    throw new Exception("Ключ сортировки не найден.");
-
-                List<string> sortedLines;
-
-                switch (method)
-                {
-                    case "Прямое слияние":
-                        sortedLines = PerformDirectMergeSort(lines.Skip(1).ToList(), keyIndices, 0);
-                        break;
-                    case "Естественное слияние":
-                        var chunks = SplitFile(lines.Skip(1), (int)lines.Count() / 2);
-                        SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), new List<int>());
-                        sortedLines = PerformNaturalMergeSort(chunks, keyIndices, delay);
-                        break;
-                    case "Многопутевое слияние":
-                        sortedLines = PerformMultiwayMergeSort(lines.Skip(1).ToList(), keyIndices);
-                        break;
-                    default:
-                        throw new Exception("Неизвестный метод сортировки.");
-                }
-
-                // Получаем текущую директорию
-                string currentDirectory = Directory.GetCurrentDirectory();
-                string relativePath = System.IO.Path.Combine(currentDirectory, "../../../../");
-
-                // Формируем полный путь к файлу
-                string resultFilePath = System.IO.Path.Combine(relativePath, "sorted_result.xlsx");
-
-                // Создаем DataTable из отсортированных данных
-                DataTable sortedDataTable = new DataTable();
-                foreach (var header in headers)
-                {
-                    sortedDataTable.Columns.Add(header);
-                }
-
-                foreach (var line in sortedLines)
-                {
-                    var rowData = line.Split(',');
-                    if (rowData.Length != sortedDataTable.Columns.Count)
-                    {
-                        throw new Exception($"Количество столбцов в строке ({rowData.Length}) не соответствует количеству столбцов в таблице ({sortedDataTable.Columns.Count}).");
-                    }
-                    sortedDataTable.Rows.Add(rowData);
-                }
-
-                // Сохраняем результат в Excel файл
-                SaveDataTableToExcel(sortedDataTable, resultFilePath);
-                LogAction($"Сортировка завершена! Результат сохранен в {resultFilePath}", 0);
-
-                // Сохраняем состояние
-                SaveState(sortedDataTable, LogBox.Items.Cast<string>().ToList(), new List<int>());
-            }
-            catch (Exception ex)
-            {
-                LogAction($"Ошибка: {ex.Message}", 0);
-            }
-            _currentStateIndex = 0;
-            UpdateState();
-            MessageBox.Show("Сортировка завершена, нажмите кнопку вперед");
-        }
-
-
-        private List<string> PerformDirectMergeSort(List<string> data, List<int> keyIndices, int delay)
-        {
-            if (data.Count <= 1)
-            {
-                return data; // Базовый случай: если массив состоит из одного элемента или пуст, он уже отсортирован
-            }
-
-            int mid = data.Count / 2;
-            var left = data.GetRange(0, mid);
-            var right = data.GetRange(mid, data.Count - mid);
-
-            LogAction($"Делим массив на две части: левая часть ({left.Count} элементов), правая часть ({right.Count} элементов).", delay);
-            SaveState(ConvertChunkToDataTable(data, keyIndices), LogBox.Items.Cast<string>().ToList(), new List<int>());
-
-            var sortedLeft = PerformDirectMergeSort(left, keyIndices, delay);
-            var sortedRight = PerformDirectMergeSort(right, keyIndices, delay);
-
-            return Merge(sortedLeft, sortedRight, keyIndices, delay);
-        }
-
-        private List<string> Merge(List<string> left, List<string> right, List<int> keyIndices, int delay)
-        {
-            var result = new List<string>();
-            int i = 0, j = 0;
-            List<int> highlightedRows = new List<int>();
-
-            while (i < left.Count && j < right.Count)
-            {
-                if (CompareRows(left[i], right[j], keyIndices) <= 0)
-                {
-                    result.Add(left[i]);
-                    i++;
-                    LogAction($"Добавляем элемент из левой части: {left[i - 1]}", delay);
-                    highlightedRows.Add(i - 1);
-                }
-                else
-                {
-                    result.Add(right[j]);
-                    j++;
-                    LogAction($"Добавляем элемент из правой части: {right[j - 1]}", delay);
-                    highlightedRows.Add(j - 1);
-                }
-                SaveState(ConvertChunkToDataTable(result, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-                highlightedRows.Clear();
-            }
-
-            while (i < left.Count)
-            {
-                result.Add(left[i]);
-                i++;
-                LogAction($"Добавляем оставшийся элемент из левой части: {left[i - 1]}", delay);
-                highlightedRows.Add(i - 1);
-                SaveState(ConvertChunkToDataTable(result, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-                highlightedRows.Clear();
-            }
-
-            while (j < right.Count)
-            {
-                result.Add(right[j]);
-                j++;
-                LogAction($"Добавляем оставшийся элемент из правой части: {right[j - 1]}", delay);
-                highlightedRows.Add(j - 1);
-                SaveState(ConvertChunkToDataTable(result, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-                highlightedRows.Clear();
-            }
-
-            LogAction("Слияние завершено.", delay);
-            SaveState(ConvertChunkToDataTable(result, keyIndices), LogBox.Items.Cast<string>().ToList(), new List<int>());
-
-            return result;
-        }
-
-
-
-
-        private List<List<string>> SplitIntoNaturalRuns(List<string> data, List<int> keyIndices)
-        {
-            var runs = new List<List<string>>();
-            var currentRun = new List<string> { data[0] };
-            List<int> highlightedRows = new List<int>();
-
-            LogAction("Начинаем разбиение данных на естественные подпоследовательности.", 0);
-            SaveState(ConvertChunkToDataTable(data, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-
-            for (int i = 1; i < data.Count; i++)
-            {
-
-                highlightedRows.Add(i - 1);
-                highlightedRows.Add(i);
-
-                LogAction($"Сравниваем строки: '{data[i - 1]}' и '{data[i]}'.", 0);
-                SaveState(ConvertChunkToDataTable(data, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-                highlightedRows.Clear();
-                if (CompareRows(data[i - 1], data[i], keyIndices) <= 0)
-                {
-                    currentRun.Add(data[i]);
-                    LogAction($"Строка {i} добавлена в текущую подпоследовательность.", 0);
-                }
-                else
-                {
-                    runs.Add(currentRun);
-                    LogAction($"Текущая подпоследовательность завершена. Количество строк: {currentRun.Count}", 0);
-                    SaveState(ConvertChunkToDataTable(data, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-
-                    currentRun = new List<string> { data[i] };
-                    LogAction($"Начинаем новую подпоследовательность с строки {i}.", 0);
-                }
-            }
-
-            runs.Add(currentRun);
-            LogAction($"Разбито на {runs.Count} естественных подпоследовательностей.", 0);
-            SaveState(ConvertChunkToDataTable(data, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-
-            return runs;
-        }
-
-
-        private List<string> MergeChunks(List<List<string>> chunks, List<int> keyIndices, int delay, List<int> highlightedRows)
-        {
-            var result = new List<string>();
-            var priorityQueue = new SortedSet<(string Value, int ChunkIndex, int RowIndex)>(
-                Comparer<(string Value, int ChunkIndex, int RowIndex)>.Create(
-                    (a, b) =>
-                    {
-                        // Очищаем предыдущие подсветки
-                        ClearHighlight();
-
-                        // Подсвечиваем строки, которые сравниваются
-                        HighlightRow(a.RowIndex); // Подсвечиваем строку из очереди
-                        HighlightRow(b.RowIndex); // Подсвечиваем строку, с которой сравниваем
-                        highlightedRows.Add(a.RowIndex + a.ChunkIndex * chunks[a.ChunkIndex].Count);
-                        highlightedRows.Add(b.RowIndex + b.ChunkIndex * chunks[b.ChunkIndex].Count);
-
-                        LogAction($"Сравниваем строки: '{a.Value}' (чанк {a.ChunkIndex}, строка {a.RowIndex}) и '{b.Value}' (чанк {b.ChunkIndex}, строка {b.RowIndex}).", 0);
-
-                        SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-                        highlightedRows.Clear();
-
-                        // Сравнение строк на основе ключей
-                        int comparison = CompareRows(a.Value, b.Value, keyIndices);
-                        if (comparison == 0)
-                        {
-                            LogAction("Строки равны по ключам. Решаем по индексу чанка.", 0);
-                            return a.ChunkIndex.CompareTo(b.ChunkIndex); // Для уникальности
-                        }
-
-                        LogAction($"Результат сравнения: {(comparison < 0 ? "меньше" : "больше")}", 0);
-                        return comparison;
-                    }
-                )
-            );
-
-            LogAction("Инициализация очереди приоритетов для слияния кусков.", 0);
-
-            // Инициализация: добавляем первую строку каждого чанка в очередь
-            for (int i = 0; i < chunks.Count; i++)
-            {
-                if (chunks[i].Count > 0)
-                {
-                    priorityQueue.Add((chunks[i][0], i, 0));
-                    LogAction($"Добавлена первая строка из чанка {i} в очередь приоритетов: {chunks[i][0]}", 0);
-
-                    // Очищаем предыдущие подсветки
-                    ClearHighlight();
-
-                    HighlightRow(i * chunks[i].Count); // Подсвечиваем добавленную строку
-                    highlightedRows.Add(i * chunks[i].Count); // Добавляем строку в список подсветок
-                    SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-                    highlightedRows.Clear();
-                }
-            }
-
-            LogAction("Начинаем процесс слияния кусков.", 0);
-
-            // Пока есть элементы в очереди, продолжаем слияние
-            while (priorityQueue.Count > 0)
-            {
-                // Извлекаем минимальный элемент из очереди
-                var (minValue, chunkIndex, rowIndex) = priorityQueue.First();
-                priorityQueue.Remove((minValue, chunkIndex, rowIndex));
-                result.Add(minValue);
-
-                // Обновление DataGrid для отображения текущего результата
-                Dispatcher.Invoke(() =>
-                {
-                    var resultTable = new DataTable();
-                    resultTable.Columns.Add("Result");
-                    foreach (var item in result)
-                    {
-                        resultTable.Rows.Add(item);
-                    }
-                    ResultDataGrid.ItemsSource = resultTable.DefaultView; // Обновляем источник
-                });
-
-                LogAction($"Извлечена минимальная строка из очереди: '{minValue}' из чанка {chunkIndex}, строка {rowIndex}.", 0);
-
-
-                // Подсвечиваем извлечённую строку
-                HighlightRow(rowIndex);
-                highlightedRows.Add(rowIndex);
-                // Подсвечиваем строки в очереди
-                foreach (var item in priorityQueue)
-                {
-                    HighlightRow(item.RowIndex); // Подсвечиваем строки, которые остаются в очереди
-                    highlightedRows.Add(item.RowIndex);
-                }
-
-                SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-                highlightedRows.Clear();
-
-                // Проверяем, есть ли следующая строка в текущем чанке
-                if (rowIndex + 1 < chunks[chunkIndex].Count)
-                {
-                    var nextValue = chunks[chunkIndex][rowIndex + 1];
-                    priorityQueue.Add((nextValue, chunkIndex, rowIndex + 1));
-                    LogAction($"Добавлена следующая строка из чанка {chunkIndex}: '{nextValue}'.", 0);
-
-
-                    // Подсвечиваем текущую строку чанка и её отображение в очереди
-                    HighlightRow(rowIndex + 1); // Подсвечиваем добавляемую строку
-                    highlightedRows.Add(rowIndex + 1); // Добавляем строку в список подсветок
-
-                    SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-                    highlightedRows.Clear();
-                }
-
-                LogAction("Текущее состояние очереди приоритетов:", 0);
-                foreach (var item in priorityQueue)
-                {
-                    LogAction($"Чанк {item.ChunkIndex}, строка {item.RowIndex}, значение: {item.Value}.", 0);
-                    HighlightRow(item.RowIndex); // Подсвечиваем строку в очереди приоритетов
-                    highlightedRows.Add(item.RowIndex); // Добавляем строку в список подсветок
-                    SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-                    highlightedRows.Clear();
-                }
-            }
-
-            LogAction("Слияние кусков завершено.", 0);
-            return result;
-        }
-
-        private List<string> PerformNaturalMergeSort(List<List<string>> chunks, List<int> keyIndices, int delay)
-        {
-            List<int> highlightedRows = new List<int>();
-            var count = 0;
-
-            // Разбиваем данные на естественные подпоследовательности
-            LogAction("Начинаем разбиение данных на естественные подпоследовательности.", 0);
-            SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), new List<int>());
-
-            var naturalRuns = new List<List<string>>();
-            foreach (var chunk in chunks)
-            {
-                naturalRuns.AddRange(SplitIntoNaturalRuns(chunk, keyIndices));
-            }
-
-            LogAction("Разбиение на естественные подпоследовательности завершено.", 0);
-            SaveState(ConvertChunksToDataTable(naturalRuns, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-
-            // Слияние естественных подпоследовательностей
-            LogAction("Начинаем слияние естественных подпоследовательностей.", 0);
-            return MergeChunks(naturalRuns, keyIndices, delay, highlightedRows);
-        }
-
-
-        private List<string> PerformMultiwayMergeSort(List<string> data, List<int> keyIndices, int delay)
-        {
-            if (data.Count <= 1)
-            {
-                return data; // Базовый случай: если массив состоит из одного элемента или пуст, он уже отсортирован
-            }
-
-            int quarter = data.Count / 4;
-            var part1 = data.GetRange(0, quarter);
-            var part2 = data.GetRange(quarter, quarter);
-            var part3 = data.GetRange(2 * quarter, quarter);
-            var part4 = data.GetRange(3 * quarter, data.Count - 3 * quarter);
-
-            LogAction($"Делим массив на четыре части: часть 1 ({part1.Count} элементов), часть 2 ({part2.Count} элементов), часть 3 ({part3.Count} элементов), часть 4 ({part4.Count} элементов).", delay);
-            SaveState(ConvertChunkToDataTable(data, keyIndices), LogBox.Items.Cast<string>().ToList(), new List<int>());
-
-            var task1 = Task.Run(() => PerformMultiwayMergeSort(part1, keyIndices, delay));
-            var task2 = Task.Run(() => PerformMultiwayMergeSort(part2, keyIndices, delay));
-            var task3 = Task.Run(() => PerformMultiwayMergeSort(part3, keyIndices, delay));
-            var task4 = Task.Run(() => PerformMultiwayMergeSort(part4, keyIndices, delay));
-
-            Task.WaitAll(task1, task2, task3, task4);
-
-            var sortedPart1 = task1.Result;
-            var sortedPart2 = task2.Result;
-            var sortedPart3 = task3.Result;
-            var sortedPart4 = task4.Result;
-
-            var merged12 = Merge(sortedPart1, sortedPart2, keyIndices, delay);
-            var merged34 = Merge(sortedPart3, sortedPart4, keyIndices, delay);
-
-            return Merge(merged12, merged34, keyIndices, delay);
-        }
-
-        private List<string> MergeChunksParallel(List<List<string>> chunks, List<int> keyIndices, int delay, List<int> highlightedRows)
-        {
-            var result = new BlockingCollection<string>();
-            var priorityQueue = new BlockingCollection<(string Value, int ChunkIndex, int RowIndex)>();
-
-            LogAction("Инициализация очереди приоритетов для слияния кусков.", 0);
-            // Инициализация: добавляем первую строку каждого чанка в очередь
-            for (int i = 0; i < chunks.Count; i++)
-            {
-                if (chunks[i].Count > 0)
-                {
-                    priorityQueue.Add((chunks[i][0], i, 0));
-                    LogAction($"Добавлена первая строка из чанка {i} в очередь приоритетов: {chunks[i][0]}", 0);
-
-                    highlightedRows.Add(0 + i * chunks[i].Count); // Добавляем строку в список подсветок
-                    SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-                    highlightedRows.Clear();
-                }
-            }
-
-            // Параллельная обработка очереди приоритетов
-            Parallel.For(0, chunks.Count, _ =>
-            {
-                while (!priorityQueue.IsCompleted)
-                {
-                    if (priorityQueue.TryTake(out var minElement, Timeout.Infinite))
-                    {
-                        result.Add(minElement.Value);
-
-                        highlightedRows.Add(minElement.RowIndex);
-                        LogAction($"Извлечена минимальная строка из очереди: '{minElement.Value}' из чанка {minElement.ChunkIndex}, строка {minElement.RowIndex}.", 0);
-                        SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-                        highlightedRows.Clear();
-
-                        // Добавление следующего элемента чанка в очередь
-                        if (minElement.RowIndex + 1 < chunks[minElement.ChunkIndex].Count)
-                        {
-                            var nextValue = chunks[minElement.ChunkIndex][minElement.RowIndex + 1];
-                            priorityQueue.Add((nextValue, minElement.ChunkIndex, minElement.RowIndex + 1));
-                            LogAction($"Добавлена следующая строка из чанка {minElement.ChunkIndex}: '{nextValue}'.", 0);
-
-                            highlightedRows.Add(minElement.RowIndex + 1 + minElement.ChunkIndex * chunks[minElement.ChunkIndex].Count);
-                            SaveState(ConvertChunksToDataTable(chunks, headers), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-                            highlightedRows.Clear();
-                        }
-                    }
-                }
-            });
-
-            LogAction("Слияние кусков завершено.", 0);
-
-            // Конвертируем BlockingCollection в List
-            return result.ToList();
-        }
-
-
-
-        private void InsertionSort(List<string> chunk, List<int> keyIndices)
-        {
-            List<int> highlightedRows = new List<int>();
-
-            LogAction("Начинаем сортировку данных внутри чанка методом вставок.", 0);
-            SaveState(ConvertChunkToDataTable(chunk, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-
-            for (int i = 1; i < chunk.Count; i++)
-            {
-                var key = chunk[i];
-                int j = i - 1;
-
-                // Очищаем предыдущие подсветки
-                ClearHighlight();
-
-                // Выделяем строку, которую будем перемещать
-                HighlightRow(i);
-                highlightedRows.Add(i);
-                LogAction($"Выделяем строку {i} для перемещения: {key}", 0);
-                SaveState(ConvertChunkToDataTable(chunk, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-                highlightedRows.Clear();
-
-                while (j >= 0 && CompareRows(chunk[j], key, keyIndices) > 0)
-                {
-                    chunk[j + 1] = chunk[j];
-                    j--;
-
-                    highlightedRows.Add(j + 1);
-                    LogAction($"Перемещаем строку {j + 1} на позицию {j + 2}: {chunk[j + 1]}", 0);
-                    SaveState(ConvertChunkToDataTable(chunk, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-                    highlightedRows.Clear();
-                }
-
-                chunk[j + 1] = key;
-
-                highlightedRows.Add(j + 1);
-                LogAction($"Строка {i} перемещена на позицию {j + 1}: {key}", 0);
-                SaveState(ConvertChunkToDataTable(chunk, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-                highlightedRows.Clear();
-            }
-
-            LogAction("Сортировка данных внутри чанка методом вставок завершена.", 0);
-            SaveState(ConvertChunkToDataTable(chunk, keyIndices), LogBox.Items.Cast<string>().ToList(), highlightedRows);
-        }
-
-
-        private DataTable ConvertChunkToDataTable(List<string> chunk, List<int> keyIndices)
-        {
-            DataTable dataTable = new DataTable();
-            var headers = chunk.First().Split(',');
-
-            foreach (var header in headers)
-            {
-                dataTable.Columns.Add(header);
-            }
-
-            foreach (var line in chunk)
-            {
-                var rowData = line.Split(',');
-                dataTable.Rows.Add(rowData);
-            }
-
-            return dataTable;
-        }
-
-        private DataTable ConvertChunksToDataTable(List<List<string>> chunks, string[] headers)
-        {
-            DataTable dataTable = new DataTable();
-
-            foreach (var header in headers)
-            {
-                dataTable.Columns.Add(header);
-            }
-
-            foreach (var chunk in chunks)
-            {
-                foreach (var line in chunk)
-                {
-                    var rowData = line.Split(',');
-                    dataTable.Rows.Add(rowData);
-                }
-            }
-
-            return dataTable;
-        }
-
-        private List<string> LoadExcelDataAsXlsx(string filePath)
-        {
-            FileInfo fileInfo = new FileInfo(filePath);
-            List<string> xlsxLines = new List<string>();
-
-            using (ExcelPackage package = new ExcelPackage(fileInfo))
-            {
-                ExcelWorksheet worksheet = package.Workbook.Worksheets[0]; // Предполагается, что данные находятся на первом листе
-
-                // Загрузка заголовков столбцов
-                string[] headers = new string[worksheet.Dimension.End.Column];
-                for (int col = 1; col <= worksheet.Dimension.End.Column; col++)
-                {
-                    headers[col - 1] = worksheet.Cells[1, col].Text;
-                }
-                xlsxLines.Add(string.Join(",", headers));
-
-                // Загрузка данных
-                for (int row = 2; row <= worksheet.Dimension.End.Row; row++)
-                {
-                    string[] rowData = new string[worksheet.Dimension.End.Column];
-                    for (int col = 1; col <= worksheet.Dimension.End.Column; col++)
-                    {
-                        rowData[col - 1] = worksheet.Cells[row, col].Text;
-                    }
-                    xlsxLines.Add(string.Join(",", rowData));
-                }
-            }
-
-            return xlsxLines;
-        }
-
-        private List<List<string>> SplitFile(IEnumerable<string> lines, int chunkSize)
-        {
-            int count = 0;
-            var chunks = lines.Select((line, index) => new { line, index })
-                              .GroupBy(x => x.index / chunkSize)
-                              .Select(g => g.Select(x => x.line).ToList())
-                              .ToList();
-
-            foreach (var chunk in chunks)
-            {
-                LogAction("Делим файл на чанки, на экране чанк номер: " + count, 0);
-                SaveState(ConvertChunkToDataTable(chunk, new List<int>()), LogBox.Items.Cast<string>().ToList(), new List<int>());
-                count++;
-            }
-
-            return chunks;
-        }
-
-
-
-
-
-        private int CompareRows(string a, string b, List<int> keyIndices)
-        {
-            var aValues = a.Split(',');
-            var bValues = b.Split(',');
-
-            foreach (var keyIndex in keyIndices)
-            {
-                int comparison = string.Compare(aValues[keyIndex], bValues[keyIndex], StringComparison.Ordinal);
-                if (comparison != 0)
-                {
-                    return comparison;
-                }
-            }
-
-            return 0;
-        }
-
-        private void LogAction(string message, int delay)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                LogBox.Items.Add(message);
-                LogBox.ScrollIntoView(message);
-            });
-
-            if (delay > 0)
-                System.Threading.Thread.Sleep(delay);
-        }
-
-        private void SaveDataTableToExcel(DataTable dataTable, string filePath)
-        {
-            FileInfo fileInfo = new FileInfo(filePath);
-            if (fileInfo.Exists)
-            {
-                fileInfo.Delete();
-            }
-
-            using (ExcelPackage package = new ExcelPackage(fileInfo))
-            {
-                ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("Sheet1");
-
-                // Записываем заголовки столбцов
-                for (int col = 0; col < dataTable.Columns.Count; col++)
-                {
-                    worksheet.Cells[1, col + 1].Value = dataTable.Columns[col].ColumnName;
-                }
-
-                // Записываем данные
-                for (int row = 0; row < dataTable.Rows.Count; row++)
-                {
-                    for (int col = 0; col < dataTable.Columns.Count; col++)
-                    {
-                        worksheet.Cells[row + 2, col + 1].Value = dataTable.Rows[row][col];
-                    }
-                }
-
-                package.Save();
-            }
-        }
-
-        private void SaveState(DataTable dataTable, List<string> log, List<int> highlightedRows)
-        {
-            // Удаляем все состояния после текущего индекса
-            if (_currentStateIndex < _states.Count - 1)
-            {
-                _states.RemoveRange(_currentStateIndex + 1, _states.Count - _currentStateIndex - 1);
-            }
-
-            // Сохраняем новое состояние
-            _states.Add(new TableState(dataTable.Copy(), new List<string>(log), new List<int>(highlightedRows)));
-            _currentStateIndex = _states.Count - 1;
-
-            // Обновляем отображение таблицы
-            Dispatcher.Invoke(() =>
-            {
-                dataGrid.ItemsSource = null; // Очищаем текущий ItemsSource
-                dataGrid.ItemsSource = dataTable.DefaultView;
-            });
-        }
-
-
-        private void GoBack()
-        {
-            if (_currentStateIndex > 0)
-            {
-                _currentStateIndex--;
-                UpdateState();
-            }
-        }
-
-        private void GoForward()
-        {
-            if (_currentStateIndex < _states.Count - 1)
-            {
-                _currentStateIndex++;
-                ClearHighlight();
-                UpdateState();
-            }
-        }
-
-        private void UpdateState()
-        {
-            var currentState = _states[_currentStateIndex];
-
-            Dispatcher.Invoke(() =>
-            {
-                // Очистка Items перед обновлением ItemsSource
-                dataGrid.ItemsSource = null;
-                dataGrid.Items.Clear();
-
-                // Устанавливаем новое ItemsSource
-                dataGrid.ItemsSource = currentState.DataTable.DefaultView;
-                dataGrid.Items.Refresh();
-
-                // Очистка и обновление LogBox
-                LogBox.ItemsSource = null;
-                LogBox.Items.Clear();
-                LogBox.ItemsSource = currentState.Log;
-                LogBox.Items.Refresh();
-
-                // Применяем подсветку строк
-                ClearHighlight();
-                foreach (var rowIndex in currentState.HighlightedRows)
-                {
-                    HighlightRow(rowIndex);
-                }
-            });
-        }
-
-
-
-
-
-
-        private void HighlightRow(int rowIndex)
-        {
-            var dataGridRow = GetDataGridRow(rowIndex);
-            if (dataGridRow != null)
-            {
-                dataGridRow.Style = (Style)FindResource("HighlightedRowStyle");
-            }
-        }
-
-        private void ClearHighlight()
-        {
-            foreach (var item in dataGrid.Items)
-            {
-                var row = dataGrid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
-                if (row != null)
-                {
-                    row.Style = null; // Сбрасываем стиль строки
-                }
-            }
-        }
-
-        // Метод для получения строки DataGrid по индексу
-        private DataGridRow GetDataGridRow(int rowIndex)
-        {
-            // Проверяем, что индекс находится в допустимых пределах
-            if (rowIndex < 0 || rowIndex >= dataGrid.Items.Count)
-            {
-                throw new ArgumentOutOfRangeException(nameof(rowIndex), "Индекс выходит за пределы допустимого диапазона.");
-            }
-
-            // Убеждаемся, что ItemContainerGenerator готов
-            if (dataGrid.ItemContainerGenerator.Status != GeneratorStatus.ContainersGenerated)
-            {
-                // Обновляем макет и принудительно прокручиваем к нужной строке
-                dataGrid.UpdateLayout();
-                dataGrid.ScrollIntoView(dataGrid.Items[rowIndex]);
-            }
-
-            // Пробуем получить строку через ContainerFromIndex
-            var row = dataGrid.ItemContainerGenerator.ContainerFromIndex(rowIndex) as DataGridRow;
-
-            // Если контейнер всё ещё не найден, выполняем дополнительные действия
-            if (row == null)
-            {
-                // Прокручиваем к элементу ещё раз на случай виртуализации
-                dataGrid.ScrollIntoView(dataGrid.Items[rowIndex]);
-
-                // Обновляем макет снова
-                dataGrid.UpdateLayout();
-
-                // Пробуем снова получить контейнер
-                row = dataGrid.ItemContainerGenerator.ContainerFromIndex(rowIndex) as DataGridRow;
-            }
-
-            return row;
-        }
-
-
-        private async void StartAutoPlay_Click(object sender, RoutedEventArgs e)
-        {
-            if (_isAutoPlaying)
-            {
-                MessageBox.Show("Автопроигрывание уже запущено.");
-                return;
-            }
-
-            _isAutoPlaying = true;
-            _cancellationTokenSource = new CancellationTokenSource();
-
-            try
-            {
-                await AutoPlay(_cancellationTokenSource.Token);
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            finally
-            {
-                _isAutoPlaying = false;
-            }
-        }
-
-        private void StopAutoPlay_Click(object sender, RoutedEventArgs e)
-        {
-            if (_cancellationTokenSource != null)
-            {
-                _cancellationTokenSource.Cancel();
-            }
-        }
-
-        private async Task AutoPlay(CancellationToken cancellationToken)
-        {
-            int delay = int.TryParse(DelayBox.Text, out int d) ? d : 500;
-
-            while (_currentStateIndex < _states.Count - 1)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                }
-
-                GoForward();
-                await Task.Delay(delay, cancellationToken);
-            }
-        }
-
-        private List<string> PerformMultiwayMergeSort(List<string> data, List<int> keyIndices)
-        {
-            return PerformDirectMergeSort(data, keyIndices, 0);
-        }
-
     }
 }
